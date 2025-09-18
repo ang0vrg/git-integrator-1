@@ -1,0 +1,4 @@
+FROM mysql:8.4
+
+# Copia el script SQL de inicialización
+COPY bakerychantillydb.sql /docker-entrypoint-initdb.d/

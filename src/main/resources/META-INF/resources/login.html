@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio de Sesión</title>
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+    <div class="my-signIn">
+        <div class="my-signIn__item">
+            <h2>Inicia Sesión en la Pastelería Chantilly</h2>
+            <p>Disfruta de nuestros mejores pasteles comprando en nuestro local o por delivery</p>
+        </div>
+
+        <div class="my-signIn__list">
+            <div class="my-formbox">
+                <form action="/auth/login" method="POST" class="my-signIn__container">
+                    <div class="c-input-item">
+                        <label for="email">Correo Electrónico <em class="required">*</em></label>
+                        <input  type="email" 
+                                id="email" 
+                                name="email"
+                                placeholder="Correo electrónico"
+                                autocomplete="email"
+                                required>
+                    </div>
+                    <div class="c-input-item">
+                        <label for="password">Contraseña <em class="required">*</em></label>
+                        <input  type="password" 
+                                id="password" 
+                                name="password"
+                                autocomplete="current-password"
+                                placeholder="Contraseña"
+                                required>
+                    </div>
+                        <div class="my-signIn__list__button">
+                            <button type="submit">Iniciar Sesión</button>
+                        </div>
+                </form>
+            </div>
+        </div>
+        <p>¿Aún no tienes una cuenta? <a href="/register.html">Regístrate aquí</a></p>
+    </div>
+    <div id="message-popup"></div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const form = document.querySelector('form');
+                const popup = document.getElementById('message-popup');
+            
+                form.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                
+                    const formData = new FormData(form);
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: new URLSearchParams(formData),
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                    });
+                
+                    const message = await response.text();
+                    popup.textContent = message;
+                
+                    if (response.ok) {
+                        popup.style.backgroundColor = 'green';
+                        // Puedes redirigir a la página principal después de un inicio de sesión exitoso
+                        // window.location.href = '/index.html';
+                    } else {
+                        popup.style.backgroundColor = 'red';
+                    }
+                
+                    popup.classList.add('show');
+                    setTimeout(() => {
+                        popup.classList.remove('show');
+                    }, 4000);
+                });
+            });
+        </script>
+</body>
+</html>
