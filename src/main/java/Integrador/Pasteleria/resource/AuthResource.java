@@ -10,82 +10,88 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-/*Tengo algunos fallos con estas 2 */
-/*import io.smallrye.jwt.build.Jwt;*/
-/*import org.eclipse.microprofile.jwt.Claims;*/
-import java.util.Optional;
 
-/*Guiara a una direccion /auth/... .html */
-@Path("/auth")
+import io.smallrye.jwt.build.Jwt;
+import org.eclipse.microprofile.jwt.Claims;
+import java.util.Optional;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Set;
+
+@Path("/auth")//Ruta base
 public class AuthResource {
 
-    @Inject
+    @Inject//Inserción de depedencias
     UsuarioService usuarioService;
 
-    @POST
-    @Path("/register")/*Toma como path register.html */
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response register(@FormParam("firstName") String firstName,/*Los formularios que se llenaran */
-                                @FormParam("lastName") String lastName,
-                                @FormParam("email") String email,
-                                @FormParam("phone") String phone,
-                                @FormParam("password") String password,
-                                @FormParam("confirmPassword") String confirmPassword) {
+    @POST//Respondera a la solicitud HTTP
+    @Path("/register")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)//Espere los datos enviados en el formulario (login/register)
+    @Produces(MediaType.TEXT_PLAIN)//Devolvera texto plano
+    public Response register(@FormParam("firstName") String firstName,//Parametros de formulario
+            @FormParam("lastName") String lastName,
+            @FormParam("email") String email,
+            @FormParam("phone") String phone,
+            @FormParam("password") String password,
+            @FormParam("confirmPassword") String confirmPassword) {
 
-        if (!password.equals(confirmPassword)) {/*Si la contraseña no es igual */
+        if (!password.equals(confirmPassword)) {//Coincidencia de contraseñas
             return Response.status(Response.Status.BAD_REQUEST).entity("Las contraseñas no coinciden").build();
         }
 
-        if (usuarioService.findByUserEmail(email).isPresent()) {/*Si el correo existe */
+        if (usuarioService.findByUserEmail(email).isPresent()) {//Busqueda y verificación de usuario
             return Response.status(Response.Status.CONFLICT).entity("Usuario ya existe").build();
         }
 
-        Usuario newUser = new Usuario();/*Nuevo Usuario */
-        newUser.setUsername(firstName + " " + lastName); // Combina nombre y apellido
+        Usuario newUser = new Usuario();//Nuevo Usuario
+        newUser.setUsername(firstName + " " + lastName);
         newUser.setUserEmail(email);
         newUser.setPhoneNumber(phone);
         newUser.setUserPassword(password);
-        newUser.setUserRole(Usuario.Role.Cliente);/*Rol por default en el register */
-        /*Creo que colocare correo de trabajadores mediante otro registro unicamente para el ADMIN */
-        usuarioService.saveUser(newUser);/*Guardará el usuario */
+        newUser.setUserRole(Usuario.Role.Cliente);//Rol por default
 
-        return Response.status(Response.Status.CREATED).entity("Registro exitoso").build();/*Dara una pagina de mensaje */
+        usuarioService.saveUser(newUser);//Guarda Usuario
+
+        return Response.status(Response.Status.CREATED).entity("Registro exitoso").build();
     }
 
     @POST
-    @Path("/login")/*Toma como path login.html */
+    @Path("/login")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response login(@FormParam("email") String email, @FormParam("password") String password) {/*2 Formularios a llenar */
+    @Produces(MediaType.APPLICATION_JSON)//Devolvera datos como Token
+    public Response login(@FormParam("email") String email, @FormParam("password") String password) {//Recibir credenciales
         try {
-            // Cambio clave aquí: usar el método findByUserEmail que devuelve un Optional
-            Optional<Usuario> optionalUser = usuarioService.findByUserEmail(email);/*Buscar por email */
+            Optional<Usuario> optionalUser = usuarioService.findByUserEmail(email);//Busqueda de usuario por correo
 
-            if (optionalUser.isEmpty()) {/*Verifica el usuario mediante su email */
-                return Response.status(Response.Status.UNAUTHORIZED)
-                                .entity("Correo o contraseña incorrectos.")
-                                .build();
+            if (optionalUser.isEmpty()) {//Existe?
+                return Response.status(Response.Status.UNAUTHORIZED)//No esta autorizado
+                        .entity("Correo o contraseña incorrectos.")
+                        .build();
             }
 
             Usuario usuario = optionalUser.get();
-            
-            // Lógica para verificar la contraseña
-            if (!usuarioService.checkPassword(password, usuario.getUserPassword())) {
-                return Response.status(Response.Status.UNAUTHORIZED)
-                                .entity("Correo o contraseña incorrectos.")
-                                .build();
+
+            if (!usuarioService.checkPassword(password, usuario.getUserPassword())) {//Compara la contraseña ingresada con la DB
+                return Response.status(Response.Status.UNAUTHORIZED)//Sino devolvera q tmpc esta autorizado
+                        .entity("Correo o contraseña incorrectos.")
+                        .build();
             }
 
-            // Lógica para generar un mensaje de éxito
-            String successMessage = "¡Has iniciado sesión con éxito!\nCorreo: " + usuario.getUserEmail() + "\nNombre de usuario: " + usuario.getUsername();
-            return Response.ok(successMessage).build();/*Juntara el correo y su nombre de usuario */
+            // --- GeneraciónTOKEN mediante libreria JWT ---
+            String token = Jwt.issuer("https://example.com/issuer") // Un identificador único del emisor
+                    .upn(usuario.getUserEmail()) // ID del usuario
+                    .groups(new HashSet<>(Arrays.asList(usuario.getUserRole().name()))) // Rol del usuario
+                    .expiresIn(3600) // Expiración(1 hora)
+                    .sign();
 
-        } catch (Exception e) {
-            e.printStackTrace(); // Por si hay algun fallo, para que no me mande un tremendo error rojo
+            // Devuelve el token en la respuesta
+            return Response.ok(token).build();
+
+        } catch (Exception e) {//Para no tener un enorme texto en rojo
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity("Ocurrió un error en el servidor. Inténtalo de nuevo más tarde.")
-                            .build();
+                    .entity("Ocurrió un error en el servidor. Inténtalo de nuevo más tarde.")
+                    .build();
         }
     }
 }
