@@ -1,5 +1,7 @@
 package Integrador.Pasteleria.resource;
 
+import Integrador.Pasteleria.dto.LoginRequest;
+import Integrador.Pasteleria.dto.RegisterRequest;
 import Integrador.Pasteleria.entity.Usuario;
 import Integrador.Pasteleria.service.UsuarioService;
 import jakarta.inject.Inject;
@@ -18,6 +20,7 @@ import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Set;
 
+@SuppressWarnings("unused")
 @Path("/auth")//Ruta base
 public class AuthResource {
 
@@ -31,26 +34,21 @@ public class AuthResource {
     @Path("/register")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)//Espere los datos enviados en el formulario (login/register)
     @Produces(MediaType.TEXT_PLAIN)//Devolvera texto plano
-    public Response register(@FormParam("firstName") String firstName,//Parametros de formulario
-            @FormParam("lastName") String lastName,
-            @FormParam("email") String email,
-            @FormParam("phone") String phone,
-            @FormParam("password") String password,
-            @FormParam("confirmPassword") String confirmPassword) {
+    public Response register(RegisterRequest request) { 
 
-        if (!password.equals(confirmPassword)) {//Coincidencia de contraseñas
+        if (!request.getPassword().equals(request.getConfirmPassword())) {//Coincidencia de contraseñas
             return Response.status(Response.Status.BAD_REQUEST).entity("Las contraseñas no coinciden").build();
         }
 
-        if (usuarioService.findByUserEmail(email).isPresent()) {//Busqueda y verificación de usuario
+        if (usuarioService.findByUserEmail(request.getEmail()).isPresent()) {//Busqueda y verificación de usuario
             return Response.status(Response.Status.CONFLICT).entity("Usuario ya existe").build();
         }
 
         Usuario newUser = new Usuario();//Nuevo Usuario
-        newUser.setUsername(firstName + " " + lastName);
-        newUser.setUserEmail(email);
-        newUser.setPhoneNumber(phone);
-        newUser.setUserPassword(password);
+        newUser.setUsername(request.getFirstName() + " " + request.getLastName()); 
+        newUser.setUserEmail(request.getEmail());
+        newUser.setPhoneNumber(request.getPhone());
+        newUser.setUserPassword(request.getPassword()); // La contraseña se hashea en saveUser
         newUser.setUserRole(Usuario.Role.Cliente);//Rol por default
 
         usuarioService.saveUser(newUser);//Guarda Usuario
@@ -60,11 +58,11 @@ public class AuthResource {
 
     @POST
     @Path("/login")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)//Devolvera datos como Token
-    public Response login(@FormParam("email") String email, @FormParam("password") String password) {//Recibir credenciales
+    public Response login(LoginRequest request) { 
         try {
-            Optional<Usuario> optionalUser = usuarioService.findByUserEmail(email);//Busqueda de usuario por correo
+            Optional<Usuario> optionalUser = usuarioService.findByUserEmail(request.getEmail());//Busqueda de usuario por correo
 
             if (optionalUser.isEmpty()) {//Existe?
                 return Response.status(Response.Status.UNAUTHORIZED)//No esta autorizado
@@ -74,18 +72,17 @@ public class AuthResource {
 
             Usuario usuario = optionalUser.get();
 
-            if (!usuarioService.checkPassword(password, usuario.getUserPassword())) {//Compara la contraseña ingresada con la DB
+            if (!usuarioService.checkPassword(request.getPassword(), usuario.getUserPassword())) {//Compara la contraseña ingresada con la DB
                 return Response.status(Response.Status.UNAUTHORIZED)//Sino devolvera q tmpc esta autorizado
                         .entity("Correo o contraseña incorrectos.")
                         .build();
             }
 
             // --- GeneraciónTOKEN mediante libreria JWT ---
-            String token = Jwt.issuer("https://example.com/issuer") // Un identificador único del emisor
-                    .upn(usuario.getUserEmail()) // ID del usuario
-                    .groups(new HashSet<>(Arrays.asList(usuario.getUserRole().name()))) // Rol del usuario
-                    .expiresIn(3600) // Expiración(1 hora)
-                    .sign();
+            String token = Jwt.upn(usuario.getUserEmail()) // ID del usuario
+                .groups(new HashSet<>(Arrays.asList(usuario.getUserRole().name()))) // Rol del usuario
+                .expiresIn(3600) // Expiración(1 hora)
+                .sign();
 
             // Devuelve el token en la respuesta
             return Response.ok(token).build();
