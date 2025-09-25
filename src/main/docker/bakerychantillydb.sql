@@ -6,7 +6,7 @@ CREATE TABLE Usuario (
   username VARCHAR(50) NOT NULL UNIQUE,
   user_email VARCHAR(100) NOT NULL UNIQUE,
   user_password VARCHAR(255) NOT NULL, -- soporta bcrypt/argon2
-  user_role ENUM('Cliente','Administrador','Trabajador') NOT NULL DEFAULT 'Cliente',
+  user_role ENUM('cliente','administrador','trabajador') NOT NULL DEFAULT 'Cliente',
   phone_number VARCHAR(20) UNIQUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

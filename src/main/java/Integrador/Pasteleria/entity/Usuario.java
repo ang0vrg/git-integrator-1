@@ -36,7 +36,7 @@ public class Usuario {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false)
-    private Role userRole = Role.Cliente;
+    private Role userRole = Role.cliente;
 
     @Column(name = "phone_number", unique = true)
     private String phoneNumber;
@@ -45,8 +45,8 @@ public class Usuario {
      * por ello no se necesita aca.*/
 
     public enum Role {/*Como se tiene roles enumerados, hay que generarlos */
-        Cliente,
-        Administrador,
-        Trabajador
+        cliente,
+        administrador,
+        trabajador
     }
 }

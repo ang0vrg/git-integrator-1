@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../assets/css/login.css'; // Asegúrate de que la ruta es correcta
+import '../assets/css/login.css';
 
 const Login = ({ switchToRegister }) => {
     // Estado para manejar los datos del formulario
@@ -26,33 +26,38 @@ const Login = ({ switchToRegister }) => {
         setMessage(''); // Limpiar mensajes anteriores
 
         try {
+            // Limpiamos los espacios en el email y password antes de enviar
+            const dataToSubmit = {
+                email: formData.email.trim(),
+                password: formData.password.trim(),
+            };
+
             const response = await fetch('/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(dataToSubmit),
             });
 
-            // Intenta leer el cuerpo de la respuesta como texto
-            const responseBody = await response.text();
-            
+            const responseBody = await response.text(); 
+
             if (response.ok) {
-                // Si la respuesta es exitosa (código 200-299)
+                const jwtToken = responseBody;
+                // Guardar el token en localStorage para mantener la sesión
+                localStorage.setItem('jwt', jwtToken);
+
                 setMessage('Inicio de sesión exitoso. Redireccionando...');
                 setIsError(false);
-                // Aquí podrías guardar el token JWT si tu backend lo devuelve
-                // Por ejemplo: if (responseBody) { localStorage.setItem('token', JSON.parse(responseBody).token); }
-                
-                // Opcional: Redireccionar o limpiar el formulario
-                // setFormData({ email: '', password: '' });
+
+                // Redirigir al usuario al área protegida (La prinicipal)
+                window.location.href = '/'; 
+
             } else {
-                // Si la respuesta no es exitosa (código 4xx o 5xx)
-                setMessage(`Error: ${responseBody || 'Credenciales inválidas.'}`);
+                setMessage(`Error: ${responseBody || 'Credenciales inválidas o error desconocido.'}`);
                 setIsError(true);
             }
         } catch (error) {
-            // Manejar errores de red o errores de la función fetch
             setMessage('Error de red. Asegúrate de que el backend de Quarkus esté corriendo.');
             setIsError(true);
         }

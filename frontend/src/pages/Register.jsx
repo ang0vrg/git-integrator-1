@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../assets/css/register.css'; // Asegúrate de que la ruta es correcta
+import '../assets/css/register.css';
 
 const Register = ({ switchToLogin }) => {
     // Estado para manejar los datos del formulario
@@ -26,19 +26,31 @@ const Register = ({ switchToLogin }) => {
     // Manejar el envío del formulario
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setMessage(''); // Limpiar mensajes anteriores
+        setMessage('');
 
-        // Validación 1: Contraseñas deben coincidir
-        if (formData.password !== formData.confirmPassword) {
+        const password = formData.password.trim(); 
+        const confirmPassword = formData.confirmPassword.trim();
+
+        if (password !== confirmPassword) {
             setMessage('Las contraseñas no coinciden.');
             setIsError(true);
-            return;
+            return; 
         }
+        const dataToSubmit = {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            password: password,
+            confirmPassword: confirmPassword
+        };
 
+        /* Temporal
+        console.log("Datos enviados al backend:", dataToSubmit);
+        console.log("Password limpio:", dataToSubmit.password);
+        console.log("ConfirmPassword limpio:", dataToSubmit.confirmPassword);
+        */
         try {
-            // Eliminar 'confirmPassword' para no enviarlo al backend
-            const { confirmPassword, ...dataToSubmit } = formData;
-            
             const response = await fetch('/auth/register', {
                 method: 'POST',
                 headers: {
@@ -48,20 +60,20 @@ const Register = ({ switchToLogin }) => {
             });
 
             const responseBody = await response.text();
-            
+
             if (response.ok) {
-                setMessage('Cuenta creada exitosamente. ¡Ya puedes iniciar sesión!');
+                const jwtToken = responseBody;
+
+                // Almacenar token y redirigir (Auto-Login)
+                localStorage.setItem('jwt', jwtToken);
+
+                setMessage('Registro exitoso. Iniciando sesión...');
                 setIsError(false);
-                // Limpiar el formulario
-                setFormData({
-                    firstName: '',
-                    lastName: '',
-                    email: '',
-                    phone: '',
-                    password: '',
-                    confirmPassword: '',
-                });
+
+                window.location.href = '/'; 
+
             } else {
+                // Manejar errores de backend (400 Bad Request, 409 Conflict)
                 setMessage(`Error de registro: ${responseBody || 'Ocurrió un error al crear la cuenta.'}`);
                 setIsError(true);
             }

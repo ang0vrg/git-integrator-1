@@ -15,10 +15,15 @@ import jakarta.ws.rs.core.Response;
 
 import io.smallrye.jwt.build.Jwt;
 import org.eclipse.microprofile.jwt.Claims;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Set;
+
+import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.SecretKey; 
+import java.security.Key;
 
 @SuppressWarnings("unused")
 @Path("/auth")//Ruta base
@@ -30,16 +35,25 @@ public class AuthResource {
     @Inject//Inserción de depedencias
     PasswordResetService passwordResetService;
 
+    private static final SecretKey SECRET_KEY;
+    private static final String SECRET_STRING = "Z2Jrd0d6TWdIVTNyN1l6bThmR0g2b3lVMlFxVGVjUWc="; // La clave de 32 bytes
+
+    static {
+        // Bloque estático para inicializar la clave una sola vez
+        byte[] secretBytes = Base64.getUrlDecoder().decode(SECRET_STRING);
+        SECRET_KEY = new SecretKeySpec(secretBytes, "HmacSHA256");
+    }
+
+/*----------------------------------------------Separación para el apartado de paginas-----------------------------------------------------------*/
     @POST//Respondera a la solicitud HTTP
     @Path("/register")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)//Espere los datos enviados en el formulario (login/register)
-    @Produces(MediaType.TEXT_PLAIN)//Devolvera texto plano
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response register(RegisterRequest request) { 
 
         if (!request.getPassword().equals(request.getConfirmPassword())) {//Coincidencia de contraseñas
             return Response.status(Response.Status.BAD_REQUEST).entity("Las contraseñas no coinciden").build();
         }
-
         if (usuarioService.findByUserEmail(request.getEmail()).isPresent()) {//Busqueda y verificación de usuario
             return Response.status(Response.Status.CONFLICT).entity("Usuario ya existe").build();
         }
@@ -49,11 +63,15 @@ public class AuthResource {
         newUser.setUserEmail(request.getEmail());
         newUser.setPhoneNumber(request.getPhone());
         newUser.setUserPassword(request.getPassword()); // La contraseña se hashea en saveUser
-        newUser.setUserRole(Usuario.Role.Cliente);//Rol por default
-
+        newUser.setUserRole(Usuario.Role.cliente);//Rol por default
         usuarioService.saveUser(newUser);//Guarda Usuario
 
-        return Response.status(Response.Status.CREATED).entity("Registro exitoso").build();
+        // --- GeneraciónTOKEN para auto-login ---
+        String token = Jwt.upn(newUser.getUserEmail())
+            .groups(new HashSet<>(Arrays.asList(newUser.getUserRole().name())))
+            .expiresIn(3600) // 1 hora
+            .sign(SECRET_KEY); 
+        return Response.ok(token).build();
     }
 
     @POST
@@ -63,15 +81,12 @@ public class AuthResource {
     public Response login(LoginRequest request) { 
         try {
             Optional<Usuario> optionalUser = usuarioService.findByUserEmail(request.getEmail());//Busqueda de usuario por correo
-
             if (optionalUser.isEmpty()) {//Existe?
                 return Response.status(Response.Status.UNAUTHORIZED)//No esta autorizado
                         .entity("Correo o contraseña incorrectos.")
                         .build();
             }
-
             Usuario usuario = optionalUser.get();
-
             if (!usuarioService.checkPassword(request.getPassword(), usuario.getUserPassword())) {//Compara la contraseña ingresada con la DB
                 return Response.status(Response.Status.UNAUTHORIZED)//Sino devolvera q tmpc esta autorizado
                         .entity("Correo o contraseña incorrectos.")
@@ -82,9 +97,7 @@ public class AuthResource {
             String token = Jwt.upn(usuario.getUserEmail()) // ID del usuario
                 .groups(new HashSet<>(Arrays.asList(usuario.getUserRole().name()))) // Rol del usuario
                 .expiresIn(3600) // Expiración(1 hora)
-                .sign();
-
-            // Devuelve el token en la respuesta
+                .sign(SECRET_KEY);
             return Response.ok(token).build();
 
         } catch (Exception e) {//Para no tener un enorme texto en rojo
