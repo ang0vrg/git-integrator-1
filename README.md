@@ -60,4 +60,26 @@ Las ramas estan dividas en nuestro integrantes , y tenemos como rama principal (
 | `git switch nombre-rama` | **Cambia** a una rama existente. |
 | `git switch -c nueva-rama` | Crea y **cambia inmediatamente** a una nueva rama. |
 
-| Pas
+### 2. Creación de Ramas para el Equipo
+
+| Pasos | Comando |
+| :--- | :--- |
+| **Crear Localmente** | `git branch Adrian` |
+| **Subir al Remoto** | `git push -u origin Adrian` |
+
+### 3. Eliminar Ramas 
+
+| Comando | Función |
+| :--- | :--- |
+| `git branch -d rama-local` | Elimina la rama local. |
+| `git push origin --delete rama-remota` | Elimina la rama del repositorio de GitHub (`origin`). |
+
+---
+
+## V. Renombrar la Rama Principal
+
+| Comando | Descripción |
+| :--- | :--- |
+| `git branch -m master main` | Renombra la rama **local** de `master` a `main`. |
+| `git push -u origin main` | Sube la rama `main` al remoto. |
+| `git push origin --delete master` | **Elimina** la antigua rama `master` del remoto. |
