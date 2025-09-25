@@ -24,6 +24,9 @@ public class AuthResource {
     @Inject//Inserción de depedencias
     UsuarioService usuarioService;
 
+    @Inject//Inserción de depedencias
+    PasswordResetService passwordResetService;
+
     @POST//Respondera a la solicitud HTTP
     @Path("/register")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)//Espere los datos enviados en el formulario (login/register)
@@ -93,5 +96,48 @@ public class AuthResource {
                     .entity("Ocurrió un error en el servidor. Inténtalo de nuevo más tarde.")
                     .build();
         }
+    }
+
+    @POST
+    @Path("/forgot-password")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response forgotPassword(@FormParam("email") String email){
+        Optional<Usuario> optionalUser = usuarioService.findByUserEmail(email);
+        if (optionalUser.isEmpty()) {
+            return Response.ok("Si la dirección de correo esta registrada, recibirás un enlace para restablecer tu contraseña").build();
+        }
+
+        String resetToken = passwordResetService.generateResetToken(email);
+        //Aver si me devuelve algo
+        return Response.ok("Token de restablecimiento generado: "+resetToken).build();
+    }
+
+    @POST
+    @Path("/reset-password")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response resetPassword(
+        @FormParam("token") String token,
+        @FormParam("newPassword") String newPassword,
+        @FormParam("confirmPassword") String confirmPassword){
+        //Contraseñas invalidas
+        if(!newPassword.equals(confirmPassword)){
+            return Response.status(Response.Status.BAD_REQUEST).entity("Las contraseñas no coinciden.").build();
+        }
+        //Invalidez de token
+        Optional<String> optionalEmail =  passwordResetService.validateResetToken(token);
+        if (optionalEmail.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("El token es invalido.").build();
+        }
+
+        String userEmail = optionalEmail.get();
+        Optional<Usuario> optionalUser = usuarioService.findByUserEmail(userEmail);
+        //Invalidez del usuario
+        if (optionalUser.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).entity("Usuario no encontrado").build();
+        }
+        
+        return Response.ok("Contraseña restablecida.").build();
     }
 }
