@@ -82,4 +82,8 @@ Las ramas estan dividas en nuestro integrantes , y tenemos como rama principal (
 | :--- | :--- |
 | `git branch -m master main` | Renombra la rama **local** de `master` a `main`. |
 | `git push -u origin main` | Sube la rama `main` al remoto. |
+<<<<<<< HEAD
 | `git push origin --delete master` | **Elimina** la antigua rama `master` del remoto. |
+=======
+| `git push origin --delete master` | **Elimina** la antigua rama `master` del remoto. |
+>>>>>>> 9533bfd7b19577d5853a28ae30097996ba0fb363
