@@ -1,7 +1,7 @@
 // frontend/src/App.jsx
 import React, { useState } from 'react';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Login from './components/Login/Login';
+import Register from './components/Register/Register';
 import './App.css'; 
 
 function App() {

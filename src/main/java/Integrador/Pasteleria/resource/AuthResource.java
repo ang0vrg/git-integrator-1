@@ -3,8 +3,10 @@ package Integrador.Pasteleria.resource;
 import Integrador.Pasteleria.dto.LoginRequest;
 import Integrador.Pasteleria.dto.RegisterRequest;
 import Integrador.Pasteleria.entity.Usuario;
+import Integrador.Pasteleria.service.PasswordResetService;
 import Integrador.Pasteleria.service.UsuarioService;
 import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.POST;
@@ -58,20 +60,32 @@ public class AuthResource {
             return Response.status(Response.Status.CONFLICT).entity("Usuario ya existe").build();
         }
 
-        Usuario newUser = new Usuario();//Nuevo Usuario
-        newUser.setUsername(request.getFirstName() + " " + request.getLastName()); 
-        newUser.setUserEmail(request.getEmail());
-        newUser.setPhoneNumber(request.getPhone());
-        newUser.setUserPassword(request.getPassword()); // La contraseña se hashea en saveUser
-        newUser.setUserRole(Usuario.Role.cliente);//Rol por default
-        usuarioService.saveUser(newUser);//Guarda Usuario
+        try {
+            Usuario newUser = new Usuario();//Nuevo Usuario
+            newUser.setUsername(request.getFirstName() + " " + request.getLastName()); 
+            newUser.setUserEmail(request.getEmail());
+            newUser.setPhoneNumber(request.getPhone());
+            newUser.setUserPassword(request.getPassword()); // La contraseña se hashea en saveUser
+            newUser.setUserRole(Usuario.Role.cliente);//Rol por default
 
-        // --- GeneraciónTOKEN para auto-login ---
-        String token = Jwt.upn(newUser.getUserEmail())
-            .groups(new HashSet<>(Arrays.asList(newUser.getUserRole().name())))
-            .expiresIn(3600) // 1 hora
-            .sign(SECRET_KEY); 
-        return Response.ok(token).build();
+            usuarioService.saveUser(newUser);//Guarda Usuario
+
+            String token = Jwt.upn(newUser.getUserEmail())
+                .groups(new HashSet<>(Arrays.asList(newUser.getUserRole().name())))
+                .expiresIn(3600) // 1 hora
+                .sign(SECRET_KEY); 
+                
+            return Response.ok(token).build();
+
+        } catch (PersistenceException e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.CONFLICT)
+                .entity("Error de base de datos: Verifica que todos los campos sean válidos.").build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Fallo interno del servidor: " + e.getMessage()).build(); 
+        }
     }
 
     @POST
