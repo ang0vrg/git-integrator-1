@@ -1,0 +1,40 @@
+#message-popup {
+  position: fixed;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  
+  background-color: #333333;
+  color: white;
+  font-weight: 600;
+  padding: 15px 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  max-width: 90%;
+  text-align: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out, transform 0.4s ease-in-out;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0); 
+  }
+
+  &.success {
+    background-color: $success-color;
+    box-shadow: 0 4px 15px rgba($success-color, 0.5);
+  }
+
+  &.error {
+    background-color: $error-color;
+    box-shadow: 0 4px 15px rgba($error-color, 0.5);
+  }
+
+  @include responsive($mobile) {
+    top: 15px;
+    font-size: 0.9em;
+  }
+}
