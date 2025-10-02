@@ -1,47 +1,27 @@
 // frontend/src/App.tsx
 
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import Login from './components/Login/Login'; 
 import Register from './components/Register/Register';
+import ForgotPassword from './components/ForgotPassword/ForgotPassword';
+import ResetPassword from './components/ResetPassword/ResetPassword';
 import './App.css'; 
 
-type NavigationHandler = (e?: React.MouseEvent) => void; 
-
-interface LoginProps {
-    switchToRegister: NavigationHandler;
-}
-
-interface RegisterProps {
-    switchToLogin: NavigationHandler;
-}
-
 function App(): React.ReactElement { 
-  const [currentPage, setCurrentPage] = useState<'login' | 'register'>('login');
-
-  const switchToRegister: NavigationHandler = (e) => {
-    if (e) e.preventDefault();
-    setCurrentPage('register');
-  };
-
-  const switchToLogin: NavigationHandler = (e) => {
-    if (e) e.preventDefault();
-    setCurrentPage('login');
-  };
-
-  const LoginTyped = Login as unknown as React.FC<LoginProps>;
-  const RegisterTyped = Register as unknown as React.FC<RegisterProps>;
-
-
   return (
-    <div className="app-container">
-      {currentPage === 'login' ? (
-        <LoginTyped switchToRegister={switchToRegister} />
-      ) : (
-        <RegisterTyped switchToLogin={switchToLogin} />
-      )}
-      
-    </div>
+    <Router>
+      <div className="app-container">
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+        </Routes>
+      </div>
+    </Router>
   )
 }
 

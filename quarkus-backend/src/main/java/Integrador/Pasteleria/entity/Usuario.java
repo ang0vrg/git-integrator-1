@@ -1,3 +1,4 @@
+// quarkus-backend\src\main\java\Integrador\Pasteleria\entity\Usuario.java
 package Integrador.Pasteleria.entity;
 
 import jakarta.persistence.Column;

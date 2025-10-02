@@ -1,6 +1,7 @@
 import React, { ChangeEvent, FormEvent, FC } from 'react';
 import FormInput from '../common/FormInput'; 
 
+// Interfaces y tipos
 interface LoginFormState {
     email: string;
     password: string;
@@ -8,24 +9,24 @@ interface LoginFormState {
 
 type ChangeHandler = (e: ChangeEvent<HTMLInputElement>) => void;
 type SubmitHandler = (e: FormEvent<HTMLFormElement>) => void;
-type RegisterSwitchHandler = (e?: React.MouseEvent) => void;
 
 interface LoginFormProps {
     formData: LoginFormState;
     handleChange: ChangeHandler;
     handleSubmit: SubmitHandler;
-    switchToRegister: RegisterSwitchHandler;
+    switchToRegister: () => void;
+    switchToForgotPassword: () => void;
 }
 
 const LoginForm: FC<LoginFormProps> = ({ 
     formData, 
     handleChange, 
     handleSubmit, 
-    switchToRegister 
+    switchToRegister,
+    switchToForgotPassword 
 }) => {
     return (
         <div className="my-formbox">
-            {/* El evento onSubmit debe usar handleSubmit, que está tipado para FormEvent<HTMLFormElement> */}
             <form onSubmit={handleSubmit} className="my-input">
                 
                 {/* Input de Correo */}
@@ -36,7 +37,6 @@ const LoginForm: FC<LoginFormProps> = ({
                     name="email"
                     placeholder="Tu correo electrónico"
                     autoComplete="email"
-                    // TypeScript sabe que formData.email es un string
                     value={formData.email} 
                     onChange={handleChange}
                     required={true}
@@ -50,13 +50,29 @@ const LoginForm: FC<LoginFormProps> = ({
                     name="password"
                     placeholder="Tu contraseña"
                     autoComplete="current-password"
-                    // TypeScript sabe que formData.password es un string
                     value={formData.password}
                     onChange={handleChange}
                     required={true}
-                    linkText="¿Olvidaste tu contraseña?"
-                    linkHref="/reset-password.html"
+                    // QUITAMOS linkText y linkHref de aquí
                 />
+
+                {/* Enlace "¿Olvidaste tu contraseña?" SEPARADO */}
+                <div className="c-input-item" style={{ textAlign: 'right', marginTop: '-15px', marginBottom: '20px' }}>
+                    <a 
+                        href="#" 
+                        onClick={(e) => {
+                            e.preventDefault();
+                            switchToForgotPassword();
+                        }}
+                        style={{ 
+                            color: '#4a90e2', 
+                            textDecoration: 'none',
+                            fontSize: '0.9em'
+                        }}
+                    >
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
 
                 {/* Botón */}
                 <div className="my-login__button">

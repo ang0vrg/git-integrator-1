@@ -1,5 +1,6 @@
 // /react-frontend/src/components/Register/Register.tsx
 import React, { useState, ChangeEvent, FormEvent, FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 import RegisterForm from './RegisterForm'; 
 import MessagePopup from '../common/MessagePopup';
 import '../../assets/scss/main.scss';
@@ -13,16 +14,8 @@ interface RegisterFormState {
     confirmPassword: string;
 }
 
-type LoginSwitchHandler = (e?: React.MouseEvent) => void; 
-
-interface RegisterProps {
-    switchToLogin: LoginSwitchHandler;
-}
-
-type ChangeHandler = (e: ChangeEvent<HTMLInputElement>) => void;
-type SubmitHandler = (event: FormEvent<HTMLFormElement>) => Promise<void>;
-
-const Register: FC<RegisterProps> = ({ switchToLogin }) => {
+const Register: FC = () => {
+    const navigate = useNavigate();
     
     const [formData, setFormData] = useState<RegisterFormState>({
         firstName: '',
@@ -53,7 +46,7 @@ const Register: FC<RegisterProps> = ({ switchToLogin }) => {
         const confirmPassword = formData.confirmPassword.trim();
 
         if (password !== confirmPassword) {
-            setMessage('Las contraseñas NO coinciden. Revisa la consola para los códigos de caracteres.');
+            setMessage('Las contraseñas NO coinciden.');
             setIsError(true);
             return; 
         }
@@ -82,7 +75,7 @@ const Register: FC<RegisterProps> = ({ switchToLogin }) => {
                 localStorage.setItem('jwt', jwtToken);
                 setMessage('Registro exitoso. Iniciando sesión...');
                 setIsError(false);
-                window.location.href = '/'; 
+                navigate('/'); // CAMBIO: usa navigate en lugar de window.location
             } else {
                 setMessage(`Error de registro: ${responseBody || 'Ocurrió un error al crear la cuenta.'}`);
                 setIsError(true);
@@ -92,6 +85,8 @@ const Register: FC<RegisterProps> = ({ switchToLogin }) => {
             setIsError(true);
         }
     };
+
+    const switchToLogin = () => navigate('/login');
 
     return (
         <div className="my-register">
@@ -112,5 +107,8 @@ const Register: FC<RegisterProps> = ({ switchToLogin }) => {
         </div>
     );
 };
+
+type ChangeHandler = (e: ChangeEvent<HTMLInputElement>) => void;
+type SubmitHandler = (event: FormEvent<HTMLFormElement>) => Promise<void>;
 
 export default Register;

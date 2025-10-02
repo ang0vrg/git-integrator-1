@@ -8,7 +8,6 @@ import Integrador.Pasteleria.service.UsuarioService;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -16,65 +15,93 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import io.smallrye.jwt.build.Jwt;
-import org.eclipse.microprofile.jwt.Claims;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.HashSet;
 import java.util.Arrays;
-import java.util.Set;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.SecretKey; 
 import java.security.Key;
 
-@SuppressWarnings("unused")
-@Path("/auth")//Ruta base
+@Path("/auth")
 public class AuthResource {
 
-    @Inject//Inserción de depedencias
+    @Inject
     UsuarioService usuarioService;
 
-    @Inject//Inserción de depedencias
+    @Inject
     PasswordResetService passwordResetService;
 
     private static final SecretKey SECRET_KEY;
-    private static final String SECRET_STRING = "Z2Jrd0d6TWdIVTNyN1l6bThmR0g2b3lVMlFxVGVjUWc="; // La clave de 32 bytes
+    private static final String SECRET_STRING = "Z2Jrd0d6TWdIVTNyN1l6bThmR0g2b3lVMlFxVGVjUWc=";
 
     static {
-        // Bloque estático para inicializar la clave una sola vez
         byte[] secretBytes = Base64.getUrlDecoder().decode(SECRET_STRING);
         SECRET_KEY = new SecretKeySpec(secretBytes, "HmacSHA256");
     }
 
-/*----------------------------------------------Separación para el apartado de paginas-----------------------------------------------------------*/
-    @POST//Respondera a la solicitud HTTP
+    // ============================================================================
+    // DTOs INTERNOS TEMPORALES
+    // ============================================================================
+    
+    public static class ForgotPasswordRequest {
+        private String email;
+        
+        public ForgotPasswordRequest() {}
+        
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
+
+    public static class ResetPasswordRequest {
+        private String token;
+        private String newPassword;
+        private String confirmPassword;
+        
+        public ResetPasswordRequest() {}
+        
+        public String getToken() { return token; }
+        public void setToken(String token) { this.token = token; }
+        
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
+        
+        public String getConfirmPassword() { return confirmPassword; }
+        public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
+    }
+
+    // ============================================================================
+    // ENDPOINTS
+    // ============================================================================
+
+    @POST
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response register(RegisterRequest request) { 
-
         String password = request.getPassword() != null ? request.getPassword().trim() : "";
         String confirmPassword = request.getConfirmPassword() != null ? request.getConfirmPassword().trim() : "";
 
         if (!password.equals(confirmPassword)) { 
             return Response.status(Response.Status.BAD_REQUEST).entity("Las contraseñas no coinciden").build();
         }
-        if (usuarioService.findByUserEmail(request.getEmail()).isPresent()) {//Busqueda y verificación de usuario
+        if (usuarioService.findByUserEmail(request.getEmail()).isPresent()) {
             return Response.status(Response.Status.CONFLICT).entity("Usuario ya existe").build();
         }
         try {
-            Usuario newUser = new Usuario();//Nuevo Usuario
+            Usuario newUser = new Usuario();
             newUser.setUsername(request.getFirstName() + " " + request.getLastName()); 
             newUser.setUserEmail(request.getEmail());
             newUser.setPhoneNumber(request.getPhone());
-            newUser.setUserPassword(request.getPassword()); // La contraseña se hashea en saveUser
-            newUser.setUserRole(Usuario.Role.cliente);//Rol por default
+            newUser.setUserPassword(request.getPassword());
+            newUser.setUserRole(Usuario.Role.cliente);
 
-            usuarioService.saveUser(newUser);//Guarda Usuario
+            usuarioService.saveUser(newUser);
 
             String token = Jwt.upn(newUser.getUserEmail())
                 .groups(new HashSet<>(Arrays.asList(newUser.getUserRole().name())))
-                .expiresIn(3600) // 1 hora
+                .expiresIn(3600)
                 .sign(SECRET_KEY); 
                 
             return Response.ok(token).build();
@@ -93,30 +120,29 @@ public class AuthResource {
     @POST
     @Path("/login")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)//Devolvera datos como Token
+    @Produces(MediaType.APPLICATION_JSON)
     public Response login(LoginRequest request) { 
         try {
-            Optional<Usuario> optionalUser = usuarioService.findByUserEmail(request.getEmail());//Busqueda de usuario por correo
-            if (optionalUser.isEmpty()) {//Existe?
-                return Response.status(Response.Status.UNAUTHORIZED)//No esta autorizado
+            Optional<Usuario> optionalUser = usuarioService.findByUserEmail(request.getEmail());
+            if (optionalUser.isEmpty()) {
+                return Response.status(Response.Status.UNAUTHORIZED)
                         .entity("Correo o contraseña incorrectos.")
                         .build();
             }
             Usuario usuario = optionalUser.get();
-            if (!usuarioService.checkPassword(request.getPassword(), usuario.getUserPassword())) {//Compara la contraseña ingresada con la DB
-                return Response.status(Response.Status.UNAUTHORIZED)//Sino devolvera q tmpc esta autorizado
+            if (!usuarioService.checkPassword(request.getPassword(), usuario.getUserPassword())) {
+                return Response.status(Response.Status.UNAUTHORIZED)
                         .entity("Correo o contraseña incorrectos.")
                         .build();
             }
 
-            // --- GeneraciónTOKEN mediante libreria JWT ---
-            String token = Jwt.upn(usuario.getUserEmail()) // ID del usuario
-                .groups(new HashSet<>(Arrays.asList(usuario.getUserRole().name()))) // Rol del usuario
-                .expiresIn(3600) // Expiración(1 hora)
+            String token = Jwt.upn(usuario.getUserEmail())
+                .groups(new HashSet<>(Arrays.asList(usuario.getUserRole().name())))
+                .expiresIn(3600)
                 .sign(SECRET_KEY);
             return Response.ok(token).build();
 
-        } catch (Exception e) {//Para no tener un enorme texto en rojo
+        } catch (Exception e) {
             e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("Ocurrió un error en el servidor. Inténtalo de nuevo más tarde.")
@@ -126,44 +152,42 @@ public class AuthResource {
 
     @POST
     @Path("/forgot-password")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response forgotPassword(@FormParam("email") String email){
-        Optional<Usuario> optionalUser = usuarioService.findByUserEmail(email);
+    public Response forgotPassword(ForgotPasswordRequest request) {
+        Optional<Usuario> optionalUser = usuarioService.findByUserEmail(request.getEmail());
         if (optionalUser.isEmpty()) {
-            return Response.ok("Si la dirección de correo esta registrada, recibirás un enlace para restablecer tu contraseña").build();
+            return Response.ok("Si la dirección de correo está registrada, recibirás un enlace para restablecer tu contraseña").build();
         }
-
-        String resetToken = passwordResetService.generateResetToken(email);
-        //Aver si me devuelve algo
-        return Response.ok("Token de restablecimiento generado: "+resetToken).build();
+        String resetToken = passwordResetService.generateResetToken(request.getEmail());
+        return Response.ok("Token de restablecimiento generado: " + resetToken).build();
     }
 
     @POST
     @Path("/reset-password")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response resetPassword(
-        @FormParam("token") String token,
-        @FormParam("newPassword") String newPassword,
-        @FormParam("confirmPassword") String confirmPassword){
-        //Contraseñas invalidas
-        if(!newPassword.equals(confirmPassword)){
+    public Response resetPassword(ResetPasswordRequest request) {
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Las contraseñas no coinciden.").build();
         }
-        //Invalidez de token
-        Optional<String> optionalEmail =  passwordResetService.validateResetToken(token);
+    
+        Optional<String> optionalEmail = passwordResetService.validateResetToken(request.getToken());
         if (optionalEmail.isEmpty()) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("El token es invalido.").build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("El token es inválido o ha expirado.").build();
         }
-
+    
         String userEmail = optionalEmail.get();
         Optional<Usuario> optionalUser = usuarioService.findByUserEmail(userEmail);
-        //Invalidez del usuario
         if (optionalUser.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).entity("Usuario no encontrado").build();
         }
+    
+        Usuario usuario = optionalUser.get();
+        usuarioService.updatePassword(usuario, request.getNewPassword());
         
-        return Response.ok("Contraseña restablecida.").build();
+        passwordResetService.invalidateToken(request.getToken());
+    
+        return Response.ok("Contraseña restablecida exitosamente.").build();
     }
 }

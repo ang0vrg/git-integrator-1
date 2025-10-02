@@ -1,3 +1,4 @@
+// quarkus-backend\src\main\java\Integrador\Pasteleria\dto\PasswordResetToken.java
 package Integrador.Pasteleria.dto;
 
 import java.time.Instant;
@@ -12,7 +13,7 @@ import java.time.Instant;
         this.token = token;
         this.expiryDate = expiryDate;
     }
-    /**
+    /** 
      * Verifica si el token ha expirado.
      * @return si el tiempo actual es posterior a la fecha de expiración
      */

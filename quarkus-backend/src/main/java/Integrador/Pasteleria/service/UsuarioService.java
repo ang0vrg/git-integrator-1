@@ -1,3 +1,4 @@
+// quarkus-backend\src\main\java\Integrador\Pasteleria\service\UsuarioService.java
 package Integrador.Pasteleria.service;
 
 import Integrador.Pasteleria.entity.Usuario;
@@ -28,8 +29,26 @@ public class UsuarioService {
         em.persist(usuario);
         return usuario;
     }
-
-    public boolean checkPassword(String plainPassword, String hashedPassword) {//Checkeo de password y devolución del encriptado
+        /**
+     * Hashea una contraseña usando BCrypt
+     */
+    public String hashPassword(String plainPassword) {
+        return BCrypt.hashpw(plainPassword, BCrypt.gensalt());
+    }
+    /**
+     * Verifica si la contraseña coincide con el hash
+     */
+    public boolean checkPassword(String plainPassword, String hashedPassword) {
         return BCrypt.checkpw(plainPassword, hashedPassword);
+    }
+    /**
+     * Actualiza la contraseña de un usuario
+     */
+    @Transactional
+    public void updatePassword(Usuario usuario, String newPassword) {
+        String hashedPassword = hashPassword(newPassword);
+        usuario.setUserPassword(hashedPassword);
+        em.merge(usuario);
+        em.flush();
     }
 }

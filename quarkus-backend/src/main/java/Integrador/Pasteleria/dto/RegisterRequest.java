@@ -1,3 +1,4 @@
+// quarkus-backend\src\main\java\Integrador\Pasteleria\dto\RegisterRequest.java
 package Integrador.Pasteleria.dto;
 
 import lombok.Data;

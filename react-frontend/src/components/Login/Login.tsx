@@ -1,24 +1,17 @@
+// react-frontend\src\components\Login\Login.tsx
 import React, { useState, ChangeEvent, FormEvent, FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LoginForm from './LoginForm'; 
 import MessagePopup from '../common/MessagePopup';
-import '../../assets/scss/main.scss';
+//import '../../assets/scss/main.scss';
 
 interface LoginFormState {
     email: string;
     password: string;
 }
 
-type RegisterSwitchHandler = (e?: React.MouseEvent) => void; 
-
-interface LoginProps {
-    switchToRegister: RegisterSwitchHandler;
-}
-
-type ChangeHandler = (e: ChangeEvent<HTMLInputElement>) => void;
-type SubmitHandler = (event: FormEvent<HTMLFormElement>) => Promise<void>;
-
-
-const Login: FC<LoginProps> = ({ switchToRegister }) => {
+const Login: FC = () => {
+    const navigate = useNavigate();
     
     const [formData, setFormData] = useState<LoginFormState>({
         email: '',
@@ -62,7 +55,7 @@ const Login: FC<LoginProps> = ({ switchToRegister }) => {
                 setMessage('Inicio de sesión exitoso. Redireccionando...');
                 setIsError(false);
 
-                window.location.href = '/'; 
+                navigate('/'); // CAMBIO: usa navigate en lugar de window.location
 
             } else {
                 setMessage(`Error: ${responseBody || 'Credenciales inválidas o error desconocido.'}`);
@@ -74,6 +67,10 @@ const Login: FC<LoginProps> = ({ switchToRegister }) => {
         }
     };
 
+    // NUEVAS FUNCIONES CON useNavigate
+    const switchToRegister = () => navigate('/register');
+    const switchToForgotPassword = () => navigate('/forgot-password');
+
     return (
         <div className="my-login">
             <h2>Bienvenido</h2>
@@ -84,6 +81,7 @@ const Login: FC<LoginProps> = ({ switchToRegister }) => {
                 handleChange={handleChange}
                 handleSubmit={handleSubmit}
                 switchToRegister={switchToRegister} 
+                switchToForgotPassword={switchToForgotPassword} // NUEVO PROP
             />
             
             <MessagePopup 
@@ -93,5 +91,9 @@ const Login: FC<LoginProps> = ({ switchToRegister }) => {
         </div>
     );
 };
+
+// MANTENER estos tipos si se usan en otros archivos
+type ChangeHandler = (e: ChangeEvent<HTMLInputElement>) => void;
+type SubmitHandler = (event: FormEvent<HTMLFormElement>) => Promise<void>;
 
 export default Login;
