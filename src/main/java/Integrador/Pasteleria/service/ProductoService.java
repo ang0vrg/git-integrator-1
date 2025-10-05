@@ -64,6 +64,28 @@ public class ProductoService {
         productoRepositorio.delete(id);
     }
 
+    @Transactional
+    public void validarStock(Integer productId, Integer quantity) {
+        Producto producto = productoRepositorio.findById(productId);
+        if (producto == null) {
+            throw new NotFoundException("Producto no encontrado con ID: " + productId);
+        }
+        if (producto.getProductQuantity() < quantity) {
+            throw new IllegalArgumentException("Stock insuficiente para el producto ID: " + productId);
+        }
+    }
+
+    @Transactional
+    public void actualizarStock(Integer productId, Integer quantity) {
+        Producto producto = productoRepositorio.findById(productId);
+        if (producto == null) {
+            throw new NotFoundException("Producto no encontrado con ID: " + productId);
+        }
+        producto.setProductQuantity(producto.getProductQuantity() - quantity);
+        producto.setUpdatedOn(Timestamp.from(Instant.now()));
+        productoRepositorio.update(producto);
+    }
+
     private ProductoDTO convertToDTO(Producto producto) {
         ProductoDTO dto = new ProductoDTO();
         dto.setIdProduct(producto.getIdProduct());

@@ -1,0 +1,9 @@
+{
+    "idUser": 1, 
+    "productos": [
+    {
+        "idproduct": 1, 
+        "quantity": 3     
+    }
+    ]
+}

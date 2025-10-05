@@ -55,6 +55,7 @@ CREATE TABLE Pedido (
 -- TABLA DETALLE_PEDIDO
 -- ============================
 CREATE TABLE DetallePedido (
+  id_order_detail INT AUTO_INCREMENT PRIMARY KEY,
   id_order INT,
   id_product INT,
   quantity INT NOT NULL,

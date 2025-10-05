@@ -16,6 +16,9 @@ import lombok.AllArgsConstructor;
 public class DetallePedido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_order_detail")/*Columna id_order_detail */
+    private Integer idOrderDetail;/*Tipo de variable */
+    
     @Column(name = "id_order")/*Columna id_order */
     private Integer idOrder;/*Tipo de variable */
 

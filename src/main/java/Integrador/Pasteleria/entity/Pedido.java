@@ -31,5 +31,5 @@ public class Pedido {
     private Double orderTotal;
 
     @Column(name = "id_user", nullable = false)
-    private Integer idUserd;
+    private Integer idUser;
 }
