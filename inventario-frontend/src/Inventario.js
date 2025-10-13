@@ -75,8 +75,67 @@ function Inventario() {
         product.productName.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Estado para saber qué producto estamos editando. Si es 'null', no estamos editando nada.
+    const [editingProduct, setEditingProduct] = useState(null);
+
+    // Estado para los datos del formulario de edición.
+    const [editFormData, setEditFormData] = useState({
+        productName: '',
+        productDescription: '',
+        productPrice: '',
+        productQuantity: '',
+        idSupplier: ''
+    });
+
+    // En src/Inventario.js
+
+// Se ejecuta cuando se hace clic en el botón "Editar" de un producto
+const handleEditClick = (product) => {
+    // Guardamos el producto que se va a editar
+    setEditingProduct(product);
+    // Llenamos el estado del formulario con los datos de ese producto
+    setEditFormData({
+        productName: product.productName,
+        productDescription: product.productDescription,
+        productPrice: product.productPrice,
+        productQuantity: product.productQuantity,
+        idSupplier: product.idSupplier
+    });
+};
+
+// Se ejecuta cada vez que el usuario escribe en el formulario de edición
+const handleEditFormChange = (event) => {
+    const { name, value } = event.target;
+    setEditFormData(prevData => ({
+        ...prevData,
+        [name]: value
+    }));
+};
+
+// Se ejecuta cuando se envía el formulario de edición
+const handleUpdateProduct = (event) => {
+    event.preventDefault();
+    const updatedProduct = {
+        ...editFormData,
+        idProduct: editingProduct.idProduct // Asegúrate de incluir el ID
+    };
+
+    // Llamamos al endpoint PUT de nuestro backend
+    axios.put(`http://localhost:8080/productos/${editingProduct.idProduct}`, updatedProduct)
+        .then(response => {
+            alert('¡Producto actualizado con éxito!');
+            setEditingProduct(null); // Cerramos el modal
+            fetchProducts(); // Refrescamos la lista de productos
+        })
+        .catch(error => {
+            console.error('¡Hubo un error al actualizar el producto!', error);
+            alert('Error al actualizar el producto.');
+        });
+};
+
     return (
         <React.Fragment>
+            <div className="inventario-container"> 
             <header className="site-header">
                 <div className="logo">
                     <img src="img/logo" alt="" />Casa del Chantilly
@@ -116,6 +175,30 @@ function Inventario() {
                         <br /><br />
                         <button type="submit">Añadir Producto</button>
                     </form>
+                    {/* Este bloque solo se renderiza si 'editingProduct' tiene un valor */}
+                    {editingProduct && (
+                        <div className="modal-overlay">
+                            <div className="modal-content">
+                                <h2>Editando Producto</h2>
+                                <form onSubmit={handleUpdateProduct}>
+                                    <label>Nombre del producto:</label>
+                                    <input type="text" name="productName" value={editFormData.productName} onChange={handleEditFormChange} required />
+                                    <label>Descripción:</label>
+                                    <input type="text" name="productDescription" value={editFormData.productDescription} onChange={handleEditFormChange} required />
+                                    <label>Precio:</label>
+                                    <input type="number" name="productPrice" value={editFormData.productPrice} onChange={handleEditFormChange} step="0.01" required />
+                                    <label>ID Proveedor:</label>
+                                    <input type="number" name="idSupplier" value={editFormData.idSupplier} onChange={handleEditFormChange} required />
+                                    <label>Cantidad:</label>
+                                    <input type="number" name="productQuantity" value={editFormData.productQuantity} onChange={handleEditFormChange} required />
+
+                                    <button type="submit">Guardar Cambios</button>
+                                    {/* Botón para cerrar el modal */}
+                                    <button type="button" onClick={() => setEditingProduct(null)} style={{ marginLeft: '0px' }}>Cancelar</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <table border="1">
                     <thead>
@@ -141,6 +224,9 @@ function Inventario() {
                                 <td>${product.productPrice}</td>
                                 <td>{product.productQuantity}</td>
                                 <td>
+                                    <button onClick={() => handleEditClick(product)} style={{ marginRight: '10px' }}>
+                                        Editar ✏️
+                                    </button>
                                     <button onClick={() => handleDelete(product.idProduct)}>
                                         Eliminar
                                     </button>
@@ -154,6 +240,7 @@ function Inventario() {
             <footer>
                 <p>© 2025 La Casa del Chantilly</p>
             </footer>
+            </div>
         </React.Fragment>
     );
 }
