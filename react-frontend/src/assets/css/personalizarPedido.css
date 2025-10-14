@@ -1,0 +1,197 @@
+
+.personalizar-banner {
+  background-image: url('src/assets/images/imgPersonalizar/banner.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  height: 350px;
+  width: 100vw;
+  position: relative;
+
+}
+
+.banner-titulo-flotante {
+    position: absolute;
+    top: 50%;
+    left: 8%;
+    transform: translateY(-50%);
+    z-index: 10;
+    color: white;
+    font-size: 5vw;
+    font-weight: 700;
+    line-height: 1.1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    margin: 0;
+    padding: 0;
+}
+
+.personalizar-pagina {
+    background-color: #f5f5f5; 
+    color: #333333; 
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+    display: block;
+    justify-content: center;
+}
+
+.personalizar-contenedor {
+    max-width: 1200px;
+    width: 100%;
+    margin: 40px auto; 
+    padding: 0 40px;
+
+    
+}
+
+.personalizar-cuerpo {
+  display: flex;
+  flex-direction: row;
+  gap: 40px;
+  margin-bottom: 40px;
+  align-items: center; 
+}
+
+.personalizar-titulo {
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 30px;
+    color: #a15959; 
+}
+
+
+
+.imagen-preview {
+    flex: 0 0 350px;
+    max-width: 350px
+}
+
+.imagen-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+}
+
+.opciones-selector {
+    flex-grow: 1;
+}
+
+.opcion-grupo {
+    margin-bottom: 25px;
+}
+
+.opcion-label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #666666; 
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.botones-fila {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.botones-fila button {
+    background-color: #eeeeee; 
+    color: #333333;
+    border: 1px solid #cccccc;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.botones-fila button:hover {
+    background-color: #e0e0e0;
+    border-color: #bbbbbb;
+}
+
+.botones-fila button.activo {
+    background-color: #c44c47; 
+    border-color: #c44c47;
+    color: #ffffff; 
+    font-weight: bold;
+}
+
+/* --- Sección Campos de Comentarios y Envío --- */
+.campos-comentarios {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.campo-label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #666666;
+    font-weight: bold;
+}
+
+.input-text, .input-fecha, .input-select, .input-textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    background-color: #ffffff; 
+    color: #333333;
+    font-size: 16px;
+    margin-top: 5px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05); 
+}
+
+.input-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.input-text::placeholder, .input-textarea::placeholder {
+    color: #999999;
+}
+
+/* Botón final 'Agregar al carrito' */
+.btn-agregar {
+    background-color: #c44c47;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 4px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 25px;
+    transition: background-color 0.2s;
+}
+
+.btn-agregar:hover {
+    background-color: #a83f3a;
+}
+
+/* --- Responsive  */
+
+@media (max-width: 768px) {
+    .personalizar-cuerpo {
+        flex-direction: column;
+    }
+
+    .imagen-preview {
+        max-width: 100%;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 1024px) {
+  .personalizar-cuerpo {
+      flex-direction: column;
+      align-items: center;
+  }
+}
