@@ -1,8 +1,11 @@
-// Importaciones - usa rutas relativas
-@import 'base/variables';
-@import 'base/mixins';
-@import 'base/typography';
-@import 'base/reset';
+// Importaciones migradas a @use
+@use 'base/variables' as v;
+@use 'base/mixins' as m;
+@use 'base/typography' as t;
+@use 'base/reset' as r;
+
+// npm install -g sass-migrator
+// sass-migrator module --verbose "src/assets/scss/"
 
 // Estilos del message-popup
 #message-popup {
@@ -31,16 +34,16 @@
   }
 
   &.success {
-    background-color: $success-color;
-    box-shadow: 0 4px 15px rgba($success-color, 0.5);
+    background-color: v.$success-color;
+    box-shadow: 0 4px 15px rgba(v.$success-color, 0.5);
   }
 
   &.error {
-    background-color: $error-color;
-    box-shadow: 0 4px 15px rgba($error-color, 0.5);
+    background-color: v.$error-color;
+    box-shadow: 0 4px 15px rgba(v.$error-color, 0.5);
   }
 
-  @include responsive($mobile) {
+  @include m.responsive(v.$mobile) {
     top: 15px;
     font-size: 0.9em;
   }
@@ -54,12 +57,12 @@ body {
   background-position: center center; 
   background-repeat: no-repeat;
   background-attachment: fixed;
-  font-family: $font-primary;
+  font-family: v.$font-primary;
 }
 
 // Contenedores principales
 .my-login, .my-register {
-  @include background-cover;
+  @include m.background-cover;
   background-attachment: fixed;
   min-height: 90vh;
   border-radius: 40px;
@@ -72,18 +75,18 @@ body {
   box-shadow: inset 0px 0px 10px 0 rgba(20, 20, 20, 0.9);
 
   h2, p {
-    color: $text-light;
+    color: v.$text-light;
     text-shadow: 1px 1px 4px rgba(88, 88, 88, 0.9);
     z-index: 20;
     margin-bottom: 5px;
   }
 
-  @include responsive($tablet) {
+  @include m.responsive(v.$tablet) {
     justify-content: flex-start;
     padding-top: 15vh;
   }
 
-  @include responsive($mobile) {
+  @include m.responsive(v.$mobile) {
     justify-content: flex-start;
     padding-top: 10vh;
   }
@@ -113,7 +116,7 @@ body {
     width: 400px;
   }
 
-  @include responsive($tablet) {
+  @include m.responsive(v.$tablet) {
     width: 330px;
     padding: 35px;
     margin-top: 20px;
@@ -123,7 +126,7 @@ body {
     }
   }
 
-  @include responsive($mobile) {
+  @include m.responsive(v.$mobile) {
     width: 90%;
     max-width: 400px;
     padding: 25px;
@@ -144,26 +147,26 @@ body {
     display: block;
     font-weight: normal;
     margin-bottom: 5px;
-    color: $text-light;
+    color: v.$text-light;
   }
 
   em.required {
-    color: $error-color;
+    color: v.$error-color;
     font-style: normal;
   }
 
   input {
-    font-family: $font-primary;
+    font-family: v.$font-primary;
     width: 100%;
     padding: 10px 15px;
-    background-color: $background-dark;
+    background-color: v.$background-dark;
     color: #e0e0e0;
     border: 1px solid #555;
     border-radius: 3px;
     box-sizing: border-box;
     font-size: 16px;
 
-    @include responsive($mobile) {
+    @include m.responsive(v.$mobile) {
       padding: 10px 15px;
       font-size: 15px;
     }
@@ -175,7 +178,7 @@ body {
 .my-register__button button {
   width: 100%;
   padding: 15px 20px;
-  background-color: $primary-color;
+  background-color: v.$primary-color;
   color: white;
   border: none;
   border-radius: 5px;
