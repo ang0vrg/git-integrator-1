@@ -36,3 +36,15 @@
     transform: rotate(360deg);
   }
 }
+
+.main-nav-bar {
+  background-color: #333;
+  padding: 1rem;
+  text-align: center;
+}
+.main-nav-bar a {
+  color: white;
+  margin: 0 15px;
+  text-decoration: none;
+  font-size: 1.2rem;
+}
