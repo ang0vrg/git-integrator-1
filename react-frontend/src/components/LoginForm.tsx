@@ -1,5 +1,5 @@
 import React, { ChangeEvent, FormEvent, FC } from 'react';
-import FormInput from '../common/FormInput'; 
+import FormInput from './common/FormInput'; 
 
 // Interfaces y tipos
 interface LoginFormState {

@@ -1,8 +1,8 @@
 // react-frontend\src\components\Login\Login.tsx
 import React, { useState, ChangeEvent, FormEvent, FC } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoginForm from './LoginForm'; 
-import MessagePopup from '../common/MessagePopup';
+import LoginForm from '../components/LoginForm'; 
+import MessagePopup from '../components/common/MessagePopup';
 //import '../../assets/scss/main.scss';
 
 interface LoginFormState {

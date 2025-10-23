@@ -1,0 +1,123 @@
+// Ventana Emergente
+.VentanaEmergente {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    animation: fadeIn 0.5s;
+
+    .promo-content {
+        background-color: $color-background;
+        margin: 10% auto;
+        padding: 30px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        position: relative;
+        animation: slideIn 0.5s ease-out;
+        text-align: center;
+
+        @include small-mobile {
+            margin: 20% auto;
+        }
+
+        h2 {
+            color: $color-primary;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 30px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+
+            &:hover,
+            &:focus {
+                color: $color-primary;
+                text-decoration: none;
+            }
+        }
+    }
+}
+
+.promo-grid {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+
+    @include small-mobile {
+        flex-direction: column;
+    }
+}
+
+.promo-card {
+    cursor: pointer;
+    text-align: center;
+    transition: transform $transition-speed ease-out, box-shadow $transition-speed ease-out;
+    border-radius: 8px;
+    padding: 10px;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    flex-basis: calc(33% - 20px);
+    min-width: 120px;
+    position: relative;
+    overflow: hidden;
+
+    @include small-mobile {
+        flex-basis: 100%;
+    }
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba($color-primary, 0.3);
+    }
+
+    img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+
+    h4 {
+        margin: 5px 0 0 0;
+        font-size: 0.9rem;
+        color: $color-primary;
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 80px;
+        height: 80px;
+        background-image: url('img/ChantyPromo.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        opacity: 0;
+        transform: scale(0) rotate(0deg);
+        transition: none;
+        z-index: 10;
+    }
+
+    &.celebrate::after {
+        animation: celebratePop 0.8s ease-out forwards;
+    }
+}

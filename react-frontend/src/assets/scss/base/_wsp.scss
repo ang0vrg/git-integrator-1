@@ -1,0 +1,52 @@
+// Estilo para el botón flotante de WhatsApp
+.floating-wa-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: $color-whatsapp;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 30px;
+    line-height: 60px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 900;
+    transition: transform $transition-speed ease-in-out;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+}
+
+// Estilo para el mensaje de éxito
+.success-message {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+    border: 2px solid $color-whatsapp;
+    border-radius: 10px;
+    background-color: lighten($color-whatsapp, 30%); // e6ffe6
+    margin-top: 40px;
+    box-shadow: 0 4px 15px rgba($color-whatsapp, 0.2);
+
+    h2 {
+        color: darken($color-primary, 10%);
+        font-size: 2rem;
+        margin-bottom: 15px;
+        font-weight: 700;
+    }
+
+    p {
+        color: $color-text-dark;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+
+    .success-icon {
+        font-size: 4rem;
+        color: $color-whatsapp;
+        animation: bounce 1s infinite alternate;
+    }
+}

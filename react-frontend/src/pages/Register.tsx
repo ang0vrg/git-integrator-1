@@ -1,9 +1,9 @@
 // /react-frontend/src/components/Register/Register.tsx
 import React, { useState, ChangeEvent, FormEvent, FC } from 'react';
 import { useNavigate } from 'react-router-dom';
-import RegisterForm from './RegisterForm'; 
-import MessagePopup from '../common/MessagePopup';
-import '../../assets/scss/main.scss';
+import RegisterForm from '../components/RegisterForm'; 
+import MessagePopup from '../components/common/MessagePopup';
+import '../assets/scss/main.scss';
 
 interface RegisterFormState {
     firstName: string;
@@ -27,13 +27,36 @@ const Register: FC = () => {
     });
     const [message, setMessage] = useState<string>('');
     const [isError, setIsError] = useState<boolean>(false);
+    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>(
+      {}
+    );
 
     const handleChange: ChangeHandler = (e) => {
-        const { name, value } = e.target;
-        setFormData(prevState => ({
-            ...prevState,
-            [name as keyof RegisterFormState]: value
-        }));
+      const { name, value } = e.target;
+
+      // Validar solo para firstName y lastName
+      if (name === "firstName" || name === "lastName") {
+        const lettersOnly = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/;
+
+        if (!lettersOnly.test(value)) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            [name]: "Solo se permiten letras",
+          }));
+          return;
+        } else {
+          setFieldErrors((prev) => {
+            const newErrors = { ...prev };
+            delete newErrors[name];
+            return newErrors;
+          });
+        }
+      }
+
+      setFormData((prevState) => ({
+        ...prevState,
+        [name as keyof RegisterFormState]: value,
+      }));
     };
 
     const handleSubmit: SubmitHandler = async (event) => {

@@ -1,0 +1,136 @@
+footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+    background: $color-primary;
+    color: white;
+    padding-top: 40px;
+    margin-top: 0px;
+    font-size: 1rem;
+    font-family: $font-stack;
+    text-align: center;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 40px 40px;
+    flex-wrap: wrap; 
+    gap: 40px;
+
+    @include mobile {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0 5%;
+        text-align: left;
+    }
+}
+
+.footer-col {
+    text-align: center;
+    flex-basis: calc(100% / 3 - 40px);
+    min-width: 250px;
+
+    @include mobile {
+        min-width: 100%;
+        margin-bottom: 20px;
+        text-align: left; // Ajuste para móvil
+    }
+
+    h3 {
+        font-size: 1.3rem;
+        color: $color-text-light;
+        margin-bottom: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    p {
+        margin-bottom: 5px;
+        line-height: 1.5;
+        color: $color-text-light;
+    }
+}
+
+.footer-title-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: $color-text-light;
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.2s ease-in-out;
+    
+    @include mobile {
+        justify-content: flex-start;
+    }
+
+    &:hover {
+        color: $color-secondary;
+        text-decoration: underline;
+    }
+}
+
+.social-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    @include mobile {
+        align-items: flex-start;
+    }
+}
+
+.social-icons {
+    justify-content: center;
+    margin-top: 15px;
+    display: flex;
+    gap: 15px;
+
+    .social-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: #fefefe;
+        color: $color-primary;
+        font-size: 1.1rem;
+        transition: opacity $transition-speed;
+        margin-left: 20px;
+
+        &:hover {
+            color: #000000;
+            background-color: $color-secondary;
+        }
+    }
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.4); 
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #f0f0f0; 
+    max-width: 1000px;
+    margin: 0 auto;
+
+    @include mobile {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px 5%;
+    }
+
+    p {
+        margin: 0;
+    }
+}

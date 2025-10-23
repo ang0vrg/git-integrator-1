@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import MessagePopup from '../common/MessagePopup';
+import MessagePopup from '../components/common/MessagePopup';
 //import '../assets/scss/main.scss';
 
 const ResetPassword: React.FC = () => {

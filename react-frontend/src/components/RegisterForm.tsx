@@ -1,6 +1,6 @@
 // /react-frontend/src/components/Register/RegisterForm.tsx
 import React, { ChangeEvent, FormEvent, FC  } from 'react';
-import FormInput from '../common/FormInput'; 
+import FormInput from './common/FormInput'; 
 
 interface RegisterFormState {
     firstName: string;

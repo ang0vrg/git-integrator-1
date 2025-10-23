@@ -1,0 +1,99 @@
+//Estilo para el header y navegación
+.site-header, header {
+    background: $color-primary;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .logo {
+        display: flex;
+        align-items: center;
+        font-size: 1.2rem;
+        font-weight: bold;
+
+        img {
+            width: 40px;
+            height: auto;
+            margin-right: 10px;
+        }
+    }
+
+    nav {
+        a {
+            margin: 0 10px;
+            color: white;
+            text-decoration: none;
+            transition: color $transition-speed;
+
+            &:hover {
+                color: $color-secondary;
+            }
+
+            &.active {
+                border-bottom: 2px solid $color-secondary;
+            }
+        }
+    }
+
+    .icons a {
+        margin-left: 10px;
+        color: white;
+        text-decoration: none;
+        
+        &:hover {
+            color: $color-secondary;
+        }
+    }
+
+    .menu-toggle {
+        display: none;
+        font-size: 2rem;
+        cursor: pointer;
+        color: white;
+        transition: color $transition-speed;
+
+        &:hover {
+            color: $color-secondary;
+        }
+    }
+
+    @include mobile {
+        .desktop-icons {
+            display: none;
+        }
+
+        .main-nav {
+            display: none;
+            flex-direction: column;
+            background: $color-primary;
+            position: absolute;
+            top: 70px;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            z-index: 100;
+
+            &.show {
+                display: flex;
+            }
+
+            .mobile-nav-link {
+                display: flex;
+                align-items: center;
+                padding: 10px 0;
+                margin-top: 5px;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        .menu-toggle {
+            display: block;
+        }
+
+        .icons {
+            display: none;
+        }
+    }
+}
