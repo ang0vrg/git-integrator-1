@@ -1,0 +1,75 @@
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: #fffaf8;
+}
+
+/* Header */
+header {
+    background-color: #c92a2a; /* rojo principal */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 60px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.logo {
+    color: #ffffff; /* texto blanco */
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+    margin: 0;
+    padding: 0;
+}
+
+nav a {
+    text-decoration: none;
+    color: #ffffff; /* enlaces blancos */
+    font-weight: 500;
+    transition: color 0.3s ease, border-bottom 0.3s ease;
+    border-bottom: 2px solid transparent;
+}
+
+nav a:hover,
+nav a.activo {
+    border-bottom: 2px solid #fff;
+}
+
+/* Sección Quienes Somos */
+.quienes-somos {
+    max-width: 1100px;
+    margin: 80px auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+}
+
+.quienes-somos section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff1f1; /* fondo rosado claro */
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.quienes-somos section:hover {
+    transform: translateY(-5px);
+}
+
+.quienes-somos .texto {
+    flex: 1;
+    padding: 40px;
+    text-align: left;
+}
+
+.quienes-somos
