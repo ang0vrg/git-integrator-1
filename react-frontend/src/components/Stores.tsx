@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
-/* PARA QUE LOS ICONOS DE FONT AWESOME FUNCIONEN: 
-    1. Asegúrate de tener Node.js instalado.
-    2. Ejecuta 'npm install' en la terminal de la raíz del proyecto.
-    3. Si F.A. aún no está instalado, corre:npm install @fortawesome/fontawesome-svg-core @fortawesome/free-solid-svg-icons @fortawesome/react-fontawesome @fortawesome/free-brands-svg-icons
-*/
-
 //IMPORTACIONES DE FONT AWESOME ===
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 // Íconos Sólidos
-import { faLink, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faMapMarkerAlt, // Para la dirección
+  faClock, // Para el horario
+  faPhoneAlt, // Para el teléfono
+  faDirections, // Para el botón de mapa
+} from "@fortawesome/free-solid-svg-icons";
 // Íconos de Marcas
 import {
   faWhatsapp,
@@ -28,164 +27,225 @@ const StoresData = [
     imagen: "img/puentepiedra.png",
     direccion: "Av. Puente Piedra 255, Puente Piedra 15118",
     horario: "Lunes a domingo: 09:00 a.m. - 20:00 p.m.",
-    ubicacionUrl: "https://share.google/vDtjbexx4X9lT6Mi5",
-  },
-  {
-    ciudad: "Comas",
-    imagen: "img/comas1.png",
-    direccion: "Av. Universitaria 10677, Comas 15316",
-    horario: "Lunes a domingo: 08:00 a.m. - 23:00 p.m.",
-    ubicacionUrl: "https://share.google/ME6Gt4nxQHYZTKwuo",
-  },
-  {
-    ciudad: "Comas",
-    imagen: "img/comas2.png",
-    direccion: "Av. Victor Andrés Belaunde 121, Comas 15312",
-    horario: "Lunes a domingo: 08:00 a.m. - 23:00 p.m.",
-    ubicacionUrl: "https://share.google/a6015UEElRl5tPBQk",
-  },
-  {
-    ciudad: "Comas",
-    imagen: "img/comas3.png",
-    direccion: "Lt 176 de, Chacra Cerro 2B, Comas",
-    horario: "Lunes a domingo: 08:00 a.m. - 17:30 p.m.",
-    ubicacionUrl: "https://share.google/KykULOv1Bdvygj1QH",
-  },
-  {
-    ciudad: "Carabayllo",
-    imagen: "img/carabayllo.png",
-    direccion: "Miguel Grau 100, Carabayllo 15318",
-    horario: "Lunes a domingo: 08:00 a.m. - 22:00 p.m.",
-    ubicacionUrl: "https://share.google/mnYuaDLKKQxd7HkfV",
+    telefono: "(01) 456-7890",
+    mapaLink: "https://maps.app.goo.gl/Ejv5hYq2R7T9bLpA7",
   },
   {
     ciudad: "Los Olivos",
-    imagen: "img/LosOlivos.png",
-    direccion: "Av. Naranjal 1492, Los Olivos 15304",
-    horario: "Lunes a domingo: 08:00 a.m. - 00:00 a.m.",
-    ubicacionUrl: "https://share.google/vDtjbexx4X9lT6Mi5",
+    imagen: "img/losolivos.png",
+    direccion: "Av. Naranjal 123, Los Olivos 15301",
+    horario: "Lunes a sábado: 08:30 a.m. - 21:00 p.m.",
+    telefono: "(01) 987-6543",
+    mapaLink: "https://maps.app.goo.gl/LosOlivosExample",
   },
   {
-    ciudad: "Los Olivos",
-    imagen: "img/LosOlivos2.png",
-    direccion: "Av. Marañon 650, Los Olivos 15304",
-    horario: "Lunes a domingo: 08:00 a.m. - 22:30 a.m.",
-    ubicacionUrl: "https://share.google/aCRZ4jpOTvo3VeyIo",
-  },
-  {
-    ciudad: "Cercado de Lima",
-    imagen: "img/Cercado.png",
-    direccion: "Manzanas 71, Cercado de Lima 15306",
-    horario: "Lunes a domingo: 08:00 a.m. - 23:00 p.m.",
-    ubicacionUrl: "https://share.google/XwGOOJFCzpuJZksgj",
-  },
-  {
-    ciudad: "San Martín de Porres",
-    imagen: "img/SanMartin.png",
-    direccion: "Sta. Maria De Los Angeles 664, San Martín de Porres 15113",
-    horario: "Lunes a domingo: 08:00 a.m. - 20:00 p.m.",
-    ubicacionUrl: "https://share.google/QevHDHdxgM5mcoImq",
-  },
-  {
-    ciudad: "San Miguel",
-    imagen: "img/SanMiguel.png",
-    direccion: "Av de los Precursores 330, San Miguel 15088",
-    horario: "Lunes a domingo: 08:00 a.m. - 23:00 p.m.",
-    ubicacionUrl: "https://share.google/XGthAGse35JfJiDkG",
-  },
-  {
-    ciudad: "Callao",
-    imagen: "img/Callao.png",
-    direccion: "Manzana A, Lote 2, Av. Bocanegra, Callao 07036",
-    horario: "Lunes a domingo: 08:00 a.m. - 22:00 p.m.",
-    ubicacionUrl: "https://share.google/j6lT3SJhHu2p9iB7W",
-  },
-  {
-    ciudad: "Callao",
-    imagen: "img/callao2.png",
-    direccion: "Centro comercial Minka, Av. Argentina 3093, Callao 07001",
-    horario: "Lunes a domingo: 09:00 a.m. - 00:00 a.m.",
-    ubicacionUrl: "https://share.google/F25NkY0D3aQrJ50uD",
-  },
-  {
-    ciudad: "Independencia",
-    imagen: "img/Independencia.png",
-    direccion: "Av. las Violetas 244, Independencia LIMA 28",
-    horario: "Lunes a domingo: 08:00 a.m. - 00:00 a.m.",
-    ubicacionUrl: "https://share.google/NmYru6L7tQrNnRb26",
-  },
-  {
-    ciudad: "Lima",
-    imagen: "img/lima.png",
-    direccion: "Av. Alfredo Benavides 5150, Lima 15039",
-    horario: "Lunes a domingo: 06:00 a.m. - 21:30 a.m.",
-    ubicacionUrl: "https://share.google/SkNeXVPZaajXx9rNe",
+    ciudad: "Comas",
+    imagen: "img/comas.png",
+    direccion: "Av. Universitaria 5001, Comas 15313",
+    horario: "Martes a domingo: 10:00 a.m. - 19:30 p.m.",
+    telefono: "(01) 111-2222",
+    mapaLink: "https://maps.app.goo.gl/ComasExample",
   },
 ];
 
+// Componente para una tarjeta de tienda
+const StoreCard: React.FC<{ tienda: (typeof StoresData)[0] }> = ({
+  tienda,
+}) => {
+  return (
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden text-left border border-gray-100 hover:shadow-2xl transition duration-300">
+      <img
+        src={tienda.imagen}
+        alt={`Tienda de ${tienda.ciudad}`}
+        className="w-full h-48 object-cover"
+      />
+      <div className="p-5 space-y-3">
+        <h3 className="text-2xl font-bold text-text-dark mb-2">
+          {tienda.ciudad}
+        </h3>
+        <p className="text-gray-600 flex items-start">
+          <FontAwesomeIcon
+            icon={faMapMarkerAlt}
+            className="text-primary mr-2 mt-1 shrink-0"
+          />
+          {tienda.direccion}
+        </p>
+        <p className="text-gray-600 flex items-center">
+          <FontAwesomeIcon icon={faClock} className="text-primary mr-2" />
+          {tienda.horario}
+        </p>
+        <p className="text-gray-600 flex items-center">
+          <FontAwesomeIcon icon={faPhoneAlt} className="text-primary mr-2" />
+          <a
+            href={`tel:${tienda.telefono}`}
+            className="hover:text-primary transition"
+          >
+            {tienda.telefono}
+          </a>
+        </p>
+        <a
+          href={tienda.mapaLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full text-center px-4 py-3 bg-secondary text-text-dark font-semibold rounded-lg hover:bg-yellow-400 transition duration-300 mt-4 flex items-center justify-center gap-2"
+        >
+          <FontAwesomeIcon icon={faDirections} /> Ver en Mapa
+        </a>
+      </div>
+    </div>
+  );
+};
+
 const Stores: React.FC = () => {
+  const [selectedCity, setSelectedCity] = useState("Todas"); // Estado para filtrar
+
+  const filteredStores =
+    selectedCity === "Todas"
+      ? StoresData
+      : StoresData.filter((tienda) => tienda.ciudad === selectedCity);
+  const uniqueCities = [
+    "Todas",
+    ...new Set(StoresData.map((tienda) => tienda.ciudad)),
+  ];
+
   return (
     <>
-      <main>
-        <section className="Stores">
-          <h1>¡Visítanos!</h1>
-          <div className="grid">
-            {StoresData.map((store, index) => (
-              <div className="card" key={index}>
-                <img src={store.imagen} alt={`Sucursal ${store.ciudad}`} />
-                <h3>{store.ciudad}</h3>
-                <p>{store.direccion}</p>
-                <p>{store.horario}</p>
-                <a
-                  href={store.ubicacionUrl}
-                  target="_blank"
-                  className="btn"
-                  rel="noopener noreferrer"
-                >
-                  Ver ubicación
-                </a>
-              </div>
-            ))}
+      <main className="min-h-screen flex flex-col">
+        {/* TIENDAS SECTION */}
+        <section className="py-10 px-5">
+          <h1 className="text-4xl font-bold mb-4 text-text-dark">
+            Nuestras Ubicaciones
+          </h1>
+          <p className="text-lg text-gray-600 mb-8">
+            Encuentra la Casa del Chantilly más cercana a ti.
+          </p>
+
+          {/* Selector de Filtro */}
+          <div className="mb-10 max-w-sm mx-auto">
+            <label
+              htmlFor="city-select"
+              className="block text-text-dark font-semibold mb-2"
+            >
+              Filtrar por Ciudad:
+            </label>
+            <select
+              id="city-select"
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary"
+            >
+              {uniqueCities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* CUADRÍCULA DE TIENDAS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {filteredStores.length > 0 ? (
+              filteredStores.map((tienda, index) => (
+                <StoreCard key={index} tienda={tienda} />
+              ))
+            ) : (
+              <p className="text-center col-span-full text-xl text-gray-500">
+                No se encontraron tiendas en {selectedCity}.
+              </p>
+            )}
           </div>
         </section>
+
+        {/* BOTÓN FLOTANTE DE WHATSAPP */}
+        <a
+          href="https://wa.me/930263546?text=Hola%20La%20Casa%20del%20Chantilly,%20tengo%20una%20consulta%20sobre%20tiendas."
+          className="fixed bottom-6 right-6 p-4 rounded-full bg-whatsapp text-white shadow-xl hover:bg-green-600 transition duration-300 z-50 text-3xl flex items-center justify-center"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Chatea con nosotros por WhatsApp"
+        >
+          <FontAwesomeIcon icon={faWhatsapp} />
+        </a>
       </main>
 
-      <a
-        href="http://wa.me/955122100"
-        target="_blank"
-        className="floating-wa-btn"
-        aria-label="Chatea con nosotros por WhatsApp"
-        rel="noopener noreferrer"
-      >
-        <FontAwesomeIcon icon={faWhatsapp} />
-      </a>
-
-      <footer>
-        <div className="footer-content">
-          <div className="footer-col info-col">
-            <h3>Horario de atención</h3>
-            <p>Lunes a Sábado: 9:00 am - 8:00 pm</p>
-            <p>Domingos y feriados: 10:00 am - 7:00 pm</p>
+      {/* FOOTER */}
+      <footer className="bg-text-dark text-text-light py-10">
+        <div className="flex flex-wrap justify-around max-w-7xl mx-auto px-5 gap-8">
+          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
+            <h3 className="text-xl font-bold mb-4 text-primary">
+              La Casa del Chantilly
+            </h3>
+            <p className="mb-2 text-sm">Endulzando tus momentos desde 1995.</p>
           </div>
-
-          <div className="footer-col info-col">
-            <Link to="/contacto" className="footer-title-link">
-              <FontAwesomeIcon icon={faLink} /> Contacto
+          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
+            <h3 className="text-xl font-bold mb-4 text-primary">
+              Enlaces Rápidos
+            </h3>
+            <Link
+              to="/inicio"
+              className="block text-sm mb-2 hover:text-primary transition"
+            >
+              Inicio
+            </Link>
+            <Link
+              to="/productos"
+              className="block text-sm mb-2 hover:text-primary transition"
+            >
+              Productos
+            </Link>
+            <Link
+              to="/nosotros"
+              className="block text-sm mb-2 hover:text-primary transition"
+            >
+              Nosotros
+            </Link>
+            <Link
+              to="/tiendas"
+              className="block text-sm mb-2 hover:text-primary transition"
+            >
+              Tiendas
+            </Link>
+            <Link
+              to="/contacto"
+              className="block text-sm mb-2 hover:text-primary transition"
+            >
+              Contacto
             </Link>
           </div>
-
-          <div className="footer-col info-col">
-            <Link to="/tiendas" className="footer-title-link">
-              <FontAwesomeIcon icon={faMapMarkerAlt} /> Dirección física
+          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
+            <h3 className="text-xl font-bold mb-4 text-primary">Contáctanos</h3>
+            <p className="mb-2 text-sm">
+              <a
+                href="mailto:ventas@chantilly.com"
+                className="hover:text-primary transition"
+              >
+                ventas@chantilly.com
+              </a>
+            </p>
+            <p className="mb-2 text-sm">
+              <a
+                href="tel:+51930263546"
+                className="hover:text-primary transition"
+              >
+                (+51) 930 263 546
+              </a>
+            </p>
+            <Link
+              to="/tiendas"
+              className="block text-sm mt-4 text-primary hover:text-white transition"
+            >
+              <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />{" "}
+              Dirección física
             </Link>
           </div>
-
-          <div className="footer-col social-col">
-            <h3>Síguenos en nuestras redes sociales</h3>
-            <div className="social-icons">
+          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
+            <h3 className="text-xl font-bold mb-4 text-primary">
+              Síguenos en nuestras redes sociales
+            </h3>
+            <div className="flex space-x-4 mt-4">
               <a
                 href="https://www.facebook.com/LaCasadelChantillyOficial"
-                className="social-icon facebook"
+                className="text-2xl hover:text-primary transition"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -193,7 +253,7 @@ const Stores: React.FC = () => {
               </a>
               <a
                 href="https://instagram.com/lacasadelchantilly"
-                className="social-icon instagram"
+                className="text-2xl hover:text-primary transition"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -201,7 +261,7 @@ const Stores: React.FC = () => {
               </a>
               <a
                 href="https://tiktok.com/@lacasadelchantilly_ofi"
-                className="social-icon tiktok"
+                className="text-2xl hover:text-primary transition"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -210,17 +270,17 @@ const Stores: React.FC = () => {
             </div>
           </div>
         </div>
-
-        <div className="footer-bottom">
+        <div className="mt-10 pt-6 border-t border-gray-700 text-center text-xs text-gray-400 px-5">
           <p>
             LA CASA DEL CHANTILLY S.A.C. | 20552150148 © Todos los derechos
             reservados
           </p>
-          <p className="web-design">Diseño web: Husky</p>
+          <p className="mt-1">Diseño web: Husky</p>
         </div>
       </footer>
     </>
   );
 };
+
 
 export default Stores;

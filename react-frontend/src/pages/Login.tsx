@@ -46,20 +46,19 @@ const Login: FC = () => {
                 body: JSON.stringify(dataToSubmit),
             });
 
-            const responseBody: string = await response.text(); 
+            const data = await response.json();
 
-            if (response.ok) {
-                const jwtToken: string = responseBody;
-                localStorage.setItem('jwt', jwtToken);
-
-                setMessage('Inicio de sesión exitoso. Redireccionando...');
-                setIsError(false);
-
-                navigate('/'); // CAMBIO: usa navigate en lugar de window.location
-
+            if (response.ok && data.ok) {
+              // data.ok viene del backend
+              localStorage.setItem("token", data.token);
+              localStorage.setItem("role", data.role);
+              setMessage("Inicio de sesión exitoso. Redireccionando...");
+              setIsError(false);
+              navigate("/home");
             } else {
-                setMessage(`Error: ${responseBody || 'Credenciales inválidas o error desconocido.'}`);
-                setIsError(true);
+              // error normal
+              setMessage(`Error: ${data.msg || "Credenciales inválidas."}`);
+              setIsError(true);
             }
         } catch (error) {
             setMessage('Error de red. Asegúrate de que el backend de Quarkus esté corriendo.');

@@ -15,23 +15,34 @@ import Pay from './pages/Pay';
 import About from './pages/About';
 import Account from './pages/Account';
 
-
-
 function App(): React.ReactElement { 
   return (
     <Router>
       <div className="app-container">
         <Routes>
+          {/* Rutas públicas */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
-          <Route path="/account" element={<Account />} />
+
+          {/* Rutas protegidas - requieren autenticación */}
           <Route path="/home" element={<Home />} />
+
           <Route path="/about" element={<About />} />
+
           <Route path="/products" element={<Products />} />
+
+          {/* Ruta solo para clientes autenticados */}
           <Route path="/pay" element={<Pay />} />
+
+          <Route path="/account" element={<Account />} />
+
+          {/* Rutas para administradores */}
+
+          {/* Rutas para trabajadores y administradores */}
+          
         </Routes>
       </div>
     </Router>

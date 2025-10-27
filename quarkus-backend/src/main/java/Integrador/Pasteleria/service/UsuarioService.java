@@ -51,4 +51,46 @@ public class UsuarioService {
         em.merge(usuario);
         em.flush();
     }
+
+    /**
+     * Obtiene todos los usuarios del sistema
+     */
+    public java.util.List<Usuario> findAllUsers() {
+        return em.createQuery("SELECT u FROM Usuario u", Usuario.class).getResultList();
+    }
+
+    /**
+     * Elimina un usuario por su ID
+     */
+    @Transactional
+    public boolean deleteUser(Integer userId) {
+        Usuario usuario = em.find(Usuario.class, userId);
+        if (usuario != null) {
+            em.remove(usuario);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Actualiza el rol de un usuario
+     */
+    @Transactional
+    public boolean updateUserRole(Integer userId, Usuario.Role newRole) {
+        Usuario usuario = em.find(Usuario.class, userId);
+        if (usuario != null) {
+            usuario.setUserRole(newRole);
+            em.merge(usuario);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Busca un usuario por su ID
+     */
+    public Optional<Usuario> findById(Integer userId) {
+        Usuario usuario = em.find(Usuario.class, userId);
+        return Optional.ofNullable(usuario);
+    }
 }
