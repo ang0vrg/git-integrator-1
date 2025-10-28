@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import './index.css';
+import './index.css';   // ← reset / tipografía
+import './App.css';      // ← carga Tailwind
 import App from './App'; 
 
 const container = document.getElementById('root');

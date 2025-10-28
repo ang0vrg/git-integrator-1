@@ -1,14 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
-  faShoppingCart,
+  faSignOutAlt,
+  faSignInAlt,
   faBars,
   faTimes,
-  faFileAlt, // Icono para contenido de Administrador
-  faSignOutAlt, // Para el botón de Logout
-  faSignInAlt, // Para el botón de Login
+  faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 
 type UserRole = "cliente" | "trabajador" | "administrador";
@@ -20,13 +19,13 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { path: "/", label: "Inicio", minRole: "cliente" },
-  { path: "/productos", label: "Productos", minRole: "cliente" },
-  { path: "/nosotros", label: "Nosotros", minRole: "cliente" },
-  { path: "/tiendas", label: "Tiendas", minRole: "cliente" },
-  { path: "/contacto", label: "Contacto", minRole: "cliente" },
+  { path: "/home", label: "Inicio", minRole: "cliente" },
+  { path: "/products", label: "Productos", minRole: "cliente" },
+  { path: "/about", label: "Nosotros", minRole: "cliente" },
+  { path: "/stores", label: "Tiendas", minRole: "cliente" },
+  { path: "/contact", label: "Contacto", minRole: "cliente" },
   { path: "/dashboard", label: "Dashboard", minRole: "trabajador" },
-  { path: "/reportes", label: "Reportes Admin", minRole: "administrador" },
+  { path: "/reports", label: "Reportes Admin", minRole: "administrador" },
 ];
 
 const Menu: React.FC = () => {
@@ -38,16 +37,19 @@ const Menu: React.FC = () => {
   const navigate = useNavigate();
 
   /* ----------  leer token  ---------- */
-  React.useEffect(() => {
+  const [fullName, setFullName] = useState("");
+  useEffect(() => {
     const tk = localStorage.getItem("token");
     if (!tk) return;
     try {
       const payload = JSON.parse(atob(tk.split(".")[1]));
       setEmail(payload.upn || "");
       setRole((payload.groups?.[0] as UserRole) || "cliente");
+      setFullName(payload.name || payload.upn?.split("@")[0] || "");
     } catch {
       setEmail("");
       setRole("cliente");
+      setFullName("");
     }
   }, []);
 
@@ -69,106 +71,158 @@ const Menu: React.FC = () => {
 
   const toggleMobileMenu = () => setIsMenuOpen((v) => !v);
 
+  /* cerrar dropdown al clicar fuera */
+  useEffect(() => {
+    const close = () => setDropdownOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, []);
+
   return (
-    // HEADER
-    <header className="bg-white shadow-md sticky top-0 z-40">
-      <div className="flex justify-between items-center max-w-7xl mx-auto p-4">
-        {/* LOGO */}
-        <Link to="/" className="text-3xl font-extrabold text-primary">
-          CH<span className="text-secondary">A</span>NTY
-        </Link>
+    <header className="sticky top-0 z-50 bg-rose-600 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo + marca */}
+          <Link to="/home" className="flex items-center space-x-3">
+            <img
+              src="/logoV2.svg"
+              alt="La Casa del Chantilly"
+              className="h-10"
+            />
+            <span className="text-xl font-bold text-yellow-100 tracking-tight">
+              La Casa del <span className="text-yellow-300">Chantilly</span>
+            </span>
+          </Link>
 
-        {/* NAVEGACIÓN PRINCIPAL */}
-        <nav className="hidden md:flex space-x-6">
-          {filteredMenuItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`text-text-dark hover:text-primary transition font-medium ${
-                item.minRole === "administrador"
-                  ? "text-primary font-semibold"
-                  : ""
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* ACCIONES DE USUARIO E ÍCONOS */}
-        <div className="flex items-center space-x-4">
-          {/* Boton de Login/Logout */}
-          {/* Icono perfil + dropdown  (solo logueado) */}
-          {email && (
-            <div className="relative">
-              <button
-                onClick={() => setDropdownOpen((v) => !v)}
-                className="text-2xl text-text-dark hover:text-primary transition"
-                title="Mi perfil"
+          {/* Desktop nav */}
+          <nav className="hidden md:flex space-x-6">
+            {filteredMenuItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition
+                          ${
+                            item.minRole === "administrador"
+                              ? "text-yellow-300 hover:bg-rose-700"
+                              : "text-white hover:text-yellow-200 hover:bg-rose-700"
+                          }`}
               >
-                <FontAwesomeIcon icon={faUser} />
-              </button>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50">
-                  <p className="px-4 py-2 text-sm text-gray-600 border-b">
+          {/* Right side */}
+          <div className="flex items-center space-x-3">
+            {/* Perfil dropdown */}
+            {email && (
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => setDropdownOpen((v) => !v)}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg
+                           bg-yellow-400 text-rose-900 hover:bg-yellow-300
+                           transition duration-200"
+                >
+                  <FontAwesomeIcon icon={faUser} />
+                  <span className="hidden sm:inline text-sm">
+                    {fullName || email.split("@")[0]}
+                  </span>
+                  <FontAwesomeIcon
+                    icon={faChevronDown}
+                    className={`text-xs transition-transform duration-200 ${
+                      dropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                <div
+                  className={`absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl
+                            border border-gray-200 overflow-hidden
+                            transition-all duration-200 ease-out
+                            ${
+                              dropdownOpen
+                                ? "opacity-100 scale-100 translate-y-0"
+                                : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                            }`}
+                >
+                  <div className="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
                     {email}
-                  </p>
+                  </div>
                   <Link
                     to="/account"
-                    className="block px-4 py-2 text-sm text-text-dark hover:bg-gray-100"
+                    className="flex items-center px-4 py-3 text-sm text-gray-700
+                             hover:bg-gray-100 transition"
                     onClick={() => setDropdownOpen(false)}
                   >
+                    <FontAwesomeIcon
+                      icon={faUser}
+                      className="mr-3 text-gray-400"
+                    />
                     Editar perfil
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    className="flex items-center w-full px-4 py-3 text-sm text-rose-600
+                             hover:bg-rose-50 transition"
                   >
+                    <FontAwesomeIcon icon={faSignOutAlt} className="mr-3" />
                     Cerrar sesión
                   </button>
                 </div>
-              )}
-            </div>
-          )}
-          {!email && (
-            <Link
-              to="/login"
-              className="px-4 py-2 bg-text-dark text-white rounded-lg hover:bg-gray-700 transition text-sm font-semibold flex items-center gap-2"
-            >
-              <FontAwesomeIcon icon={faSignInAlt} />
-              <span className="hidden sm:inline">Iniciar sesión</span>
-            </Link>
-          )}
+              </div>
+            )}
 
-          {/* Btn Hamburguesa (Móvil) */}
-          <button
-            className="md:hidden text-2xl text-text-dark hover:text-primary transition"
-            onClick={toggleMobileMenu}
-            aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
-          >
-            <FontAwesomeIcon icon={isMenuOpen ? faTimes : faBars} />
-          </button>
+            {/* Login button (no logueado) */}
+            {!email && (
+              <Link
+                to="/login"
+                className="inline-flex items-center px-4 py-2 rounded-lg
+                         bg-yellow-400 text-rose-900 text-sm font-medium
+                         hover:bg-yellow-300 transition duration-200"
+              >
+                <FontAwesomeIcon icon={faSignInAlt} className="mr-2" />
+                <span className="hidden sm:inline">Iniciar sesión</span>
+              </Link>
+            )}
+
+            {/* Mobile hamburger */}
+            <button
+              className="md:hidden text-2xl text-yellow-200 hover:text-white
+                       transition duration-200"
+              onClick={toggleMobileMenu}
+              aria-label="Abrir menú"
+            >
+              <FontAwesomeIcon icon={isMenuOpen ? faTimes : faBars} />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out
+                    ${
+                      isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    }`}
+        >
+          <nav className="flex flex-col items-center space-y-3 py-4 bg-rose-700">
+            {filteredMenuItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`w-full text-center px-4 py-2 rounded-md text-base font-medium
+                          ${
+                            item.minRole === "administrador"
+                              ? "text-yellow-300 hover:bg-rose-800"
+                              : "text-white hover:text-yellow-200 hover:bg-rose-800"
+                          }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </div>
-
-      {/* MENÚ MÓVIL*/}
-      {isMenuOpen && (
-        <nav className="absolute top-[65px] left-0 w-full bg-white shadow-lg flex flex-col items-center space-y-4 py-6 md:hidden z-30">
-          {filteredMenuItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={toggleMobileMenu}
-              className={`text-lg text-text-dark hover:text-primary transition font-medium w-full text-center p-2 ${
-                item.minRole === "administrador" ? "text-primary font-bold" : ""
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      )}
     </header>
   );
 };

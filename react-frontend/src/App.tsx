@@ -14,6 +14,8 @@ import Products from './pages/Products';
 import Pay from './pages/Pay';
 import About from './pages/About';
 import Account from './pages/Account';
+import Stores from './pages/Stores';
+import Contact from './pages/Contact';
 
 function App(): React.ReactElement { 
   return (
@@ -29,14 +31,13 @@ function App(): React.ReactElement {
 
           {/* Rutas protegidas - requieren autenticación */}
           <Route path="/home" element={<Home />} />
-
           <Route path="/about" element={<About />} />
-
+          <Route path="/stores" element={<Stores />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/products" element={<Products />} />
 
           {/* Ruta solo para clientes autenticados */}
           <Route path="/pay" element={<Pay />} />
-
           <Route path="/account" element={<Account />} />
 
           {/* Rutas para administradores */}

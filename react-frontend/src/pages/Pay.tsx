@@ -18,6 +18,8 @@ import {
 // =======================================
 
 import "../App.css";
+import Menu from "../components/Menu";
+import Footer from "../components/Footer";
 
 const Pay: React.FC = () => {
   // Estados simulados para el resumen de compra
@@ -52,6 +54,7 @@ const Pay: React.FC = () => {
 
   return (
     <>
+      <Menu />
       <main className="min-h-screen flex flex-col">
         {/* PAY SECTION*/}
         <section className="max-w-5xl mx-auto p-5 py-10 w-full">
@@ -198,115 +201,7 @@ const Pay: React.FC = () => {
       </main>
 
       {/* FOOTER */}
-      <footer className="bg-text-dark text-text-light py-10">
-        <div className="flex flex-wrap justify-around max-w-7xl mx-auto px-5 gap-8">
-          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
-            <h3 className="text-xl font-bold mb-4 text-primary">
-              La Casa del Chantilly
-            </h3>
-            <p className="mb-2 text-sm">Endulzando tus momentos desde 1995.</p>
-          </div>
-          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
-            <h3 className="text-xl font-bold mb-4 text-primary">
-              Enlaces Rápidos
-            </h3>
-            <Link
-              to="/inicio"
-              className="block text-sm mb-2 hover:text-primary transition"
-            >
-              Inicio
-            </Link>
-            <Link
-              to="/productos"
-              className="block text-sm mb-2 hover:text-primary transition"
-            >
-              Productos
-            </Link>
-            <Link
-              to="/nosotros"
-              className="block text-sm mb-2 hover:text-primary transition"
-            >
-              Nosotros
-            </Link>
-            <Link
-              to="/tiendas"
-              className="block text-sm mb-2 hover:text-primary transition"
-            >
-              Tiendas
-            </Link>
-            <Link
-              to="/contacto"
-              className="block text-sm mb-2 hover:text-primary transition"
-            >
-              Contacto
-            </Link>
-          </div>
-          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
-            <h3 className="text-xl font-bold mb-4 text-primary">Contáctanos</h3>
-            <p className="mb-2 text-sm">
-              <a
-                href="mailto:ventas@chantilly.com"
-                className="hover:text-primary transition"
-              >
-                ventas@chantilly.com
-              </a>
-            </p>
-            <p className="mb-2 text-sm">
-              <a
-                href="tel:+51930263546"
-                className="hover:text-primary transition"
-              >
-                (+51) 930 263 546
-              </a>
-            </p>
-            <Link
-              to="/tiendas"
-              className="block text-sm mt-4 text-primary hover:text-white transition"
-            >
-              <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />{" "}
-              Dirección física
-            </Link>
-          </div>
-          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
-            <h3 className="text-xl font-bold mb-4 text-primary">
-              Síguenos en nuestras redes sociales
-            </h3>
-            <div className="flex space-x-4 mt-4">
-              <a
-                href="https://www.facebook.com/LaCasadelChantillyOficial"
-                className="text-2xl hover:text-primary transition"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FontAwesomeIcon icon={faFacebookF} />
-              </a>
-              <a
-                href="https://instagram.com/lacasadelchantilly"
-                className="text-2xl hover:text-primary transition"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FontAwesomeIcon icon={faInstagram} />
-              </a>
-              <a
-                href="https://tiktok.com/@lacasadelchantilly_ofi"
-                className="text-2xl hover:text-primary transition"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FontAwesomeIcon icon={faTiktok} />
-              </a>
-            </div>
-          </div>
-        </div>
-        <div className="mt-10 pt-6 border-t border-gray-700 text-center text-xs text-gray-400 px-5">
-          <p>
-            LA CASA DEL CHANTILLY S.A.C. | 20552150148 © Todos los derechos
-            reservados
-          </p>
-          <p className="mt-1">Diseño web: Husky</p>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 };

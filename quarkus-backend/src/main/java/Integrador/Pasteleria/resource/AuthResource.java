@@ -98,10 +98,13 @@ public class AuthResource {
             nuevo.setUserRole(Usuario.Role.cliente);
             usuarioService.saveUser(nuevo);
 
+            String fullName = nuevo.getUsername();
             String token = Jwt.upn(nuevo.getUserEmail())
                     .groups(Set.of(nuevo.getUserRole().name()))
+                    .claim("name", fullName) // ← aquí
                     .expiresIn(3600)
                     .sign(SECRET_KEY);
+                    
             return Response.ok(of(
                     "ok", true,
                     "token", token,
@@ -126,10 +129,12 @@ public class AuthResource {
                            .build();
         }
         Usuario u = opt.get();
+        String fullName = u.getUsername();
         String token = Jwt.upn(u.getUserEmail())
-                          .groups(Set.of(u.getUserRole().name()))
-                          .expiresIn(3600)
-                          .sign(SECRET_KEY);
+                .groups(Set.of(u.getUserRole().name()))
+                .claim("name", fullName) 
+                .expiresIn(3600)
+                .sign(SECRET_KEY);
         return Response.ok(of(
                 "ok", true,
                 "token", token,
@@ -155,6 +160,7 @@ public class AuthResource {
                 "msg", "Si la dirección existe, recibirás un enlace para restablecer tu contraseña")).build();
     }
 
+    /* ---------- 4. RESET-PASSWORD ---------- */
     @POST
     @Path("/reset-password")
     public Response resetPassword(ResetPasswordRequest request) {

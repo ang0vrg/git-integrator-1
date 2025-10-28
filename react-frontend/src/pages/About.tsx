@@ -4,74 +4,73 @@ import { Link } from 'react-router-dom';
 //IMPORTACIONES DE FONT AWESOME ===
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faMapMarkerAlt,
     faBullseye, // Icono para Misión
     faEye // Icono para Visión
 } from '@fortawesome/free-solid-svg-icons';
-// Íconos de Marcas
-import {
-    faWhatsapp,
-    faFacebookF,
-    faInstagram,
-    faTiktok
-} from '@fortawesome/free-brands-svg-icons';
+import Footer from "../components/Footer";
 // =======================================
 
 import "../App.css";
+import Menu from '../components/Menu';
+
+const bgImgs = {
+  mision: "url(/img/mision-bg.jpg)",
+  vision: "url(/img/vision-bg.jpg)",
+  default: "url(/img/nosotros-hero-default.jpg)",
+};
 
 const About: React.FC = () => {
-  //Manejo del cambio de fondo de Misión/Visión
-  const [currentBackground, setCurrentBackground] = useState("");
-  // Funcion para manejar el hover de Misión/Visión
-  const cambiarFondo = (tipo: "mision" | "vision") => {
-    setCurrentBackground(tipo);
-  };
-
-  const restaurarFondo = () => {
-    setCurrentBackground("");
-  };
-
-  // Clases dinámicas de Tailwind
-  const backgroundClasses =
-    currentBackground === "mision"
-      ? "bg-[url('img/mision-bg.jpg')] bg-cover bg-center"
-      : currentBackground === "vision"
-      ? "bg-[url('img/vision-bg.jpg')] bg-cover bg-center"
-      : "bg-[url('img/nosotros-hero-default.jpg')] bg-cover bg-center"; // Fondo por defecto si no hay hover
+  const [bg, setBg] = useState<keyof typeof bgImgs>("default");
 
   return (
     <>
+      <Menu />
       <main className="min-h-screen flex flex-col">
-        {/* HERO SECTION*/}
+        {/* HERO */}
         <section
-          className={`relative min-h-screen flex flex-col justify-center items-center text-text-light text-center nosotros-hero-before ${backgroundClasses}`}
-          id="nosotros-section"
+          style={{ backgroundImage: bgImgs[bg] }}
+          className="relative min-h-screen flex flex-col justify-center items-center text-center text-white bg-cover bg-center"
         >
-          {/* Contenido*/}
-          <div className="z-10 p-5 max-w-3xl">
-            <h1 className="text-5xl font-extrabold mb-4 drop-shadow-lg">
+          {/* overlay oscuro */}
+          <div className="absolute inset-0">
+            <video
+              className="absolute inset-0 w-full h-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+            >
+              <source
+                src="https://www.shutterstock.com/shutterstock/videos/1105946585/preview/stock-footage-portrait-of-happy-diverse-bakers-working-in-bakery-kitchen-holding-fresh-bread-in-slow-motion.webm"
+                type="video/mp4"
+              />
+            </video>
+            <div className="absolute inset-0 bg-black/50 z-10" />
+          </div>
+          <div className="relative z-10 px-4 max-w-3xl">
+            <h1 className="text-5xl md:text-7xl font-extrabold drop-shadow-xl mb-4">
               Nuestra Historia
             </h1>
-            <p className="text-lg mb-8 drop-shadow-lg">
+            <p className="text-lg md:text-xl drop-shadow-lg">
               La Casa del Chantilly es la materialización de un sueño familiar,
               comenzando en 1995 con el objetivo de llevar el sabor auténtico a
               cada hogar peruano. Nuestra receta secreta, transmitida de
-              generación en generación, es lo que nos distingue y nos ha
-              convertido en la pastelería favorita de miles.
+              generación en generación, es lo que nos distingue.
             </p>
           </div>
 
-          {/* MISION / VISION CONTAINER*/}
-          <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto py-12 px-5 bg-background-main w-full z-20">
-            {/* Misión Box */}
+          {/* Misión / Visión */}
+          <div className="relative z-10 grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mt-12 px-4">
+            {/* Misión */}
             <div
-              className="flex-1 p-8 rounded-xl shadow-lg border-t-4 border-primary bg-white text-text-dark transition duration-300 hover:shadow-2xl"
-              onMouseEnter={() => cambiarFondo("mision")}
-              onMouseLeave={restaurarFondo}
+              className="p-8 rounded-xl shadow-lg bg-white text-gray-800 border-t-4 border-rose-600 hover:shadow-2xl transition"
+              onMouseEnter={() => setBg("mision")}
+              onMouseLeave={() => setBg("default")}
+              onClick={() => setBg(bg === "mision" ? "default" : "mision")}
             >
               <FontAwesomeIcon
                 icon={faBullseye}
-                className="text-primary text-4xl mb-4"
+                className="text-rose-600 text-4xl mb-4"
               />
               <h2 className="text-2xl font-bold mb-3">Misión</h2>
               <p className="text-gray-700">
@@ -82,149 +81,30 @@ const About: React.FC = () => {
               </p>
             </div>
 
-            {/* Visión Box */}
+            {/* Visión */}
             <div
-              className="flex-1 p-8 rounded-xl shadow-lg border-t-4 border-secondary bg-white text-text-dark transition duration-300 hover:shadow-2xl"
-              onMouseEnter={() => cambiarFondo("vision")}
-              onMouseLeave={restaurarFondo}
+              className="p-8 rounded-xl shadow-lg bg-white text-gray-800 border-t-4 border-yellow-400 hover:shadow-2xl transition"
+              onMouseEnter={() => setBg("vision")}
+              onMouseLeave={() => setBg("default")}
+              onClick={() => setBg(bg === "vision" ? "default" : "vision")}
             >
               <FontAwesomeIcon
                 icon={faEye}
-                className="text-secondary text-4xl mb-4"
+                className="text-yellow-400 text-4xl mb-4"
               />
               <h2 className="text-2xl font-bold mb-3">Visión</h2>
               <p className="text-gray-700">
                 Ser la cadena de pastelerías líder a nivel nacional, reconocida
                 por nuestra excelencia, innovación constante y compromiso con la
-                tradición, expandiendo nuestra presencia para endulzar cada
-                rincón del país.
+                tradición.
               </p>
             </div>
           </div>
         </section>
-
-        {/* BOTÓN FLOTANTE DE WHATSAPP */}
-        <a
-          href="https://wa.me/930263546?text=Hola%20La%20Casa%20del%20Chantilly,%20quisiera%20saber%20más%20sobre%20ustedes."
-          className="fixed bottom-6 right-6 p-4 rounded-full bg-whatsapp text-white shadow-xl hover:bg-green-600 transition duration-300 z-50 text-3xl flex items-center justify-center"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Chatea con nosotros por WhatsApp"
-        >
-          <FontAwesomeIcon icon={faWhatsapp} />
-        </a>
       </main>
 
-      {/* FOOTER */}
-      <footer className="bg-text-dark text-text-light py-10">
-        <div className="flex flex-wrap justify-around max-w-7xl mx-auto px-5 gap-8">
-          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
-            <h3 className="text-xl font-bold mb-4 text-primary">
-              La Casa del Chantilly
-            </h3>
-            <p className="mb-2 text-sm">Endulzando tus momentos desde 1995.</p>
-          </div>
-          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
-            <h3 className="text-xl font-bold mb-4 text-primary">
-              Enlaces Rápidos
-            </h3>
-            <Link
-              to="/inicio"
-              className="block text-sm mb-2 hover:text-primary transition"
-            >
-              Inicio
-            </Link>
-            <Link
-              to="/productos"
-              className="block text-sm mb-2 hover:text-primary transition"
-            >
-              Productos
-            </Link>
-            <Link
-              to="/nosotros"
-              className="block text-sm mb-2 hover:text-primary transition"
-            >
-              Nosotros
-            </Link>
-            <Link
-              to="/tiendas"
-              className="block text-sm mb-2 hover:text-primary transition"
-            >
-              Tiendas
-            </Link>
-            <Link
-              to="/contacto"
-              className="block text-sm mb-2 hover:text-primary transition"
-            >
-              Contacto
-            </Link>
-          </div>
-          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
-            <h3 className="text-xl font-bold mb-4 text-primary">Contáctanos</h3>
-            <p className="mb-2 text-sm">
-              <a
-                href="mailto:ventas@chantilly.com"
-                className="hover:text-primary transition"
-              >
-                ventas@chantilly.com
-              </a>
-            </p>
-            <p className="mb-2 text-sm">
-              <a
-                href="tel:+51930263546"
-                className="hover:text-primary transition"
-              >
-                (+51) 930 263 546
-              </a>
-            </p>
-            <Link
-              to="/tiendas"
-              className="block text-sm mt-4 text-primary hover:text-white transition"
-            >
-              <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />{" "}
-              Dirección física
-            </Link>
-          </div>
-          <div className="w-full md:w-1/2 lg:flex-basis-col-3-minus-40 min-w-250">
-            <h3 className="text-xl font-bold mb-4 text-primary">
-              Síguenos en nuestras redes sociales
-            </h3>
-            <div className="flex space-x-4 mt-4">
-              <a
-                href="https://www.facebook.com/LaCasadelChantillyOficial"
-                className="text-2xl hover:text-primary transition"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FontAwesomeIcon icon={faFacebookF} />
-              </a>
-              <a
-                href="https://instagram.com/lacasadelchantilly"
-                className="text-2xl hover:text-primary transition"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FontAwesomeIcon icon={faInstagram} />
-              </a>
-              <a
-                href="https://tiktok.com/@lacasadelchantilly_ofi"
-                className="text-2xl hover:text-primary transition"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FontAwesomeIcon icon={faTiktok} />
-              </a>
-            </div>
-          </div>
-        </div>
-        <div className="mt-10 pt-6 border-t border-gray-700 text-center text-xs text-gray-400 px-5">
-          <p>
-            LA CASA DEL CHANTILLY S.A.C. | 20552150148 © Todos los derechos
-            reservados
-          </p>
-          <p className="mt-1">Diseño web: Husky</p>
-        </div>
-      </footer>
+      {/* Footer unificado */}
+      <Footer />
     </>
   );
 };
