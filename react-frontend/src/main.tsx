@@ -1,16 +1,10 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import './index.css';
-import App from './App'; 
+import React from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import PersonalizarPedido from "./components/PersonalizarPedido/PersonalizarPedido";
 
-const container = document.getElementById('root');
-
-if (container) {
-  createRoot(container).render(
-    <StrictMode>
-      <App />
-    </StrictMode>
-  );
-} else {
-  console.error("El elemento con id 'root' no se encontró en el documento HTML.");
-}
+createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <PersonalizarPedido />
+  </React.StrictMode>
+);
