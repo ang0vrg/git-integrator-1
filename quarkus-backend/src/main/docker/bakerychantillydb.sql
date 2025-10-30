@@ -55,7 +55,7 @@ CREATE TABLE Pedido (
 -- TABLA DETALLE_PEDIDO
 -- ============================
 CREATE TABLE DetallePedido (
-  id_order INT,
+  id_order INT AUTO_INCREMENT PRIMARY KEY,
   id_product INT,
   quantity INT NOT NULL,
   price DECIMAL(10,2) NOT NULL,
@@ -70,11 +70,19 @@ CREATE TABLE DetallePedido (
 CREATE TABLE Venta (
   id_sale INT AUTO_INCREMENT PRIMARY KEY,
   sale_type ENUM('Efectivo','Tarjeta') NOT NULL,
-  sale_status ENUM('Pendiente','Confirmado','Rechazado') DEFAULT 'Pendiente',
+  sale_status ENUM('PENDIENTE','Confirmado','Rechazado') DEFAULT 'Pendiente',
   sale_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   sale_subtotal DECIMAL(10,2) NOT NULL,
   id_order INT NOT NULL,
   FOREIGN KEY (id_order) REFERENCES Pedido(id_order) ON DELETE CASCADE
+);
+
+CREATE TABLE Inventario (
+  id_stock     INT AUTO_INCREMENT PRIMARY KEY,
+  id_product   INT NOT NULL,
+  quantity     INT NOT NULL,
+  last_update  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_product) REFERENCES Producto(id_product)
 );
 
 -- ============================

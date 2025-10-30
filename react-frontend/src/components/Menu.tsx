@@ -1,3 +1,4 @@
+// react-frontend\src\components\Menu.tsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -8,6 +9,7 @@ import {
   faBars,
   faTimes,
   faChevronDown,
+  faShoppingCart,
 } from "@fortawesome/free-solid-svg-icons";
 
 type UserRole = "cliente" | "trabajador" | "administrador";
@@ -25,7 +27,8 @@ const menuItems: MenuItem[] = [
   { path: "/stores", label: "Tiendas", minRole: "cliente" },
   { path: "/contact", label: "Contacto", minRole: "cliente" },
   { path: "/dashboard", label: "Dashboard", minRole: "trabajador" },
-  { path: "/reports", label: "Reportes Admin", minRole: "administrador" },
+  { path: "/admin/reports", label: "Reportes Admin", minRole: "administrador" },
+  { path: "/worker/reports", label: "Reportes", minRole: "trabajador" },
 ];
 
 const Menu: React.FC = () => {
@@ -34,6 +37,7 @@ const Menu: React.FC = () => {
   const [role, setRole] = React.useState<UserRole>("cliente");
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [createdAt, setCreatedAt] = useState("");
   const navigate = useNavigate();
 
   /* ----------  leer token  ---------- */
@@ -73,9 +77,21 @@ const Menu: React.FC = () => {
 
   /* cerrar dropdown al clicar fuera */
   useEffect(() => {
-    const close = () => setDropdownOpen(false);
-    window.addEventListener("click", close);
-    return () => window.removeEventListener("click", close);
+    const tk = localStorage.getItem("token");
+    if (!tk) return;
+    try {
+      const payload = JSON.parse(atob(tk.split(".")[1]));
+      setEmail(payload.upn || "");
+      setRole((payload.groups?.[0] as UserRole) || "cliente");
+
+      setFullName(payload.name || payload.upn?.split("@")[0] || "");
+      setCreatedAt(payload.createdAt || "");
+    } catch {
+      setEmail("");
+      setRole("cliente");
+      setFullName("");
+      setCreatedAt("");
+    }
   }, []);
 
   return (
@@ -83,11 +99,11 @@ const Menu: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo + marca */}
-          <Link to="/home" className="flex items-center space-x-3">
+          <Link to="/home" className="flex items-center space-x-3 ">
             <img
               src="/logoV2.svg"
               alt="La Casa del Chantilly"
-              className="h-10"
+              className="h-10 w-10"
             />
             <span className="text-xl font-bold text-yellow-100 tracking-tight">
               La Casa del <span className="text-yellow-300">Chantilly</span>
@@ -96,16 +112,15 @@ const Menu: React.FC = () => {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex space-x-6">
-            {filteredMenuItems.map((item) => (
+            {filteredMenuItems.map((item, index) => (
               <Link
-                key={item.path}
+                key={`${item.path}-${item.minRole}-${index}`} // ← única
                 to={item.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition
-                          ${
-                            item.minRole === "administrador"
-                              ? "text-yellow-300 hover:bg-rose-700"
-                              : "text-white hover:text-yellow-200 hover:bg-rose-700"
-                          }`}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition ${
+                  item.minRole === "administrador"
+                    ? "text-yellow-300 hover:bg-rose-700"
+                    : "text-white hover:text-yellow-200 hover:bg-rose-700"
+                }`}
               >
                 {item.label}
               </Link>
@@ -146,8 +161,12 @@ const Menu: React.FC = () => {
                             }`}
                 >
                   <div className="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
-                    {email}
+                    <div className="font-medium">{fullName || email}</div>
+                    <div className="text-xs text-gray-500">
+                      Miembro desde: {createdAt}
+                    </div>
                   </div>
+
                   <Link
                     to="/account"
                     className="flex items-center px-4 py-3 text-sm text-gray-700
@@ -170,6 +189,15 @@ const Menu: React.FC = () => {
                   </button>
                 </div>
               </div>
+            )}
+            {email && role === "cliente" && (
+              <Link
+                to="/cart"
+                className="text-2xl text-white hover:text-yellow-200 transition"
+                title="Mi carrito"
+              >
+                <FontAwesomeIcon icon={faShoppingCart} />
+              </Link>
             )}
 
             {/* Login button (no logueado) */}
@@ -205,16 +233,15 @@ const Menu: React.FC = () => {
                     }`}
         >
           <nav className="flex flex-col items-center space-y-3 py-4 bg-rose-700">
-            {filteredMenuItems.map((item) => (
+            {filteredMenuItems.map((item, index) => (
               <Link
-                key={item.path}
+                key={`${item.path}-${item.minRole}-${index}`} // ← única
                 to={item.path}
-                className={`w-full text-center px-4 py-2 rounded-md text-base font-medium
-                          ${
-                            item.minRole === "administrador"
-                              ? "text-yellow-300 hover:bg-rose-800"
-                              : "text-white hover:text-yellow-200 hover:bg-rose-800"
-                          }`}
+                className={`w-full text-center px-4 py-2 rounded-md text-base font-medium ${
+                  item.minRole === "administrador"
+                    ? "text-yellow-300 hover:bg-rose-800"
+                    : "text-white hover:text-yellow-200 hover:bg-rose-800"
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}

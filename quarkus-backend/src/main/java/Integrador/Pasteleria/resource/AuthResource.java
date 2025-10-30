@@ -33,6 +33,7 @@ import static java.util.Map.of;
 import static java.util.Map.ofEntries;
 import java.util.Map;
 import java.util.Set;
+import java.time.LocalDateTime;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.SecretKey;
@@ -99,9 +100,11 @@ public class AuthResource {
             usuarioService.saveUser(nuevo);
 
             String fullName = nuevo.getUsername();
+            LocalDateTime created = nuevo.getCreatedAt() != null ? nuevo.getCreatedAt() : LocalDateTime.now();
             String token = Jwt.upn(nuevo.getUserEmail())
                     .groups(Set.of(nuevo.getUserRole().name()))
-                    .claim("name", fullName) // ← aquí
+                    .claim("name", fullName) 
+                    .claim("createdAt", created.toString())
                     .expiresIn(3600)
                     .sign(SECRET_KEY);
                     
@@ -130,9 +133,13 @@ public class AuthResource {
         }
         Usuario u = opt.get();
         String fullName = u.getUsername();
+        LocalDateTime created = u.getCreatedAt() != null ? u.getCreatedAt() : LocalDateTime.now();
+        System.out.println("🧾 Rol del usuario logueado: " + u.getUserRole());
+
         String token = Jwt.upn(u.getUserEmail())
                 .groups(Set.of(u.getUserRole().name()))
                 .claim("name", fullName) 
+                .claim("createdAt", created.toString())
                 .expiresIn(3600)
                 .sign(SECRET_KEY);
         return Response.ok(of(
@@ -140,6 +147,7 @@ public class AuthResource {
                 "token", token,
                 "role", u.getUserRole().name()
         )).build();
+        
     }
 
     /* ---------- 3. FORGOT-PASSWORD ---------- */

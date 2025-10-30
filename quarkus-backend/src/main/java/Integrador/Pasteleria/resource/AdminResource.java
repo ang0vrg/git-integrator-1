@@ -1,8 +1,8 @@
-// quarkus-backend\src\main\java\Integrador\Pasteleria\resource\AdminResource.java
 package Integrador.Pasteleria.resource;
 
-import Integrador.Pasteleria.entity.Usuario;
+import Integrador.Pasteleria.dto.UsuarioDTO;
 import Integrador.Pasteleria.service.UsuarioService;
+import Integrador.Pasteleria.service.UsuarioExportService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -13,84 +13,41 @@ import java.util.List;
 @Path("/api/admin")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@RolesAllowed("administrador")
 public class AdminResource {
 
     @Inject
     UsuarioService usuarioService;
 
-    /**
-     * Solo accesible por ADMINISTRADORES
-     * Obtiene todos los usuarios del sistema
-     */
+    @Inject
+    UsuarioExportService exportService;
+
     @GET
     @Path("/users")
-    @RolesAllowed("administrador")
-    public Response getAllUsers() {
+    public Response listUsers(@QueryParam("role") String role) {
         try {
-            List<Usuario> users = usuarioService.findAllUsers();
-            return Response.ok(users).build();
+            List<UsuarioDTO> usuarios = usuarioService.listUsers(role);
+            return Response.ok(usuarios).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error al obtener usuarios: " + e.getMessage())
+            return Response.serverError()
+                    .entity("Error al listar usuarios: " + e.getMessage())
                     .build();
         }
     }
 
-    /**
-     * Solo accesible por ADMINISTRADORES
-     * Elimina un usuario por su ID
-     */
     @DELETE
     @Path("/users/{id}")
-    @RolesAllowed("administrador")
-    public Response deleteUser(@PathParam("id") Integer userId) {
-        try {
-            boolean deleted = usuarioService.deleteUser(userId);
-            if (deleted) {
-                return Response.ok("Usuario eliminado exitosamente").build();
-            } else {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("Usuario no encontrado")
-                        .build();
-            }
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error al eliminar usuario: " + e.getMessage())
-                    .build();
-        }
+    public Response deleteUser(@PathParam("id") Integer id) {
+        return usuarioService.deleteById(id)
+                ? Response.noContent().build()
+                : Response.status(Response.Status.NOT_FOUND)
+                        .entity("Usuario no encontrado").build();
     }
 
-    /**
-     * Solo accesible por ADMINISTRADORES
-     * Cambia el rol de un usuario
-     */
-    @PUT
-    @Path("/users/{id}/role")
-    @RolesAllowed("administrador")
-    public Response changeUserRole(@PathParam("id") Integer userId,
-            @QueryParam("role") String newRole) {
-        try {
-            Usuario.Role role;
-            try {
-                role = Usuario.Role.valueOf(newRole);
-            } catch (IllegalArgumentException e) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Rol inválido. Roles permitidos: cliente, trabajador, administrador")
-                        .build();
-            }
-
-            boolean updated = usuarioService.updateUserRole(userId, role);
-            if (updated) {
-                return Response.ok("Rol actualizado exitosamente").build();
-            } else {
-                return Response.status(Response.Status.NOT_FOUND)
-                        .entity("Usuario no encontrado")
-                        .build();
-            }
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Error al actualizar rol: " + e.getMessage())
-                    .build();
-        }
+    @GET
+    @Path("/users/export/excel")
+    @Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    public Response exportExcel(@QueryParam("role") String role) throws Exception {
+        return exportService.exportExcel(usuarioService.listUsers(role));
     }
 }
