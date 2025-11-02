@@ -50,7 +50,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public boolean   deleteUser(Integer userId) {
+    public boolean deleteUser(Integer userId) {
         Usuario usuario = em.find(Usuario.class, userId);
         if (usuario != null) {
             em.remove(usuario);
@@ -75,17 +75,24 @@ public class UsuarioService {
     }
 
     public List<UsuarioDTO> listUsers(String role) {
-        return em.createNativeQuery("""
-                    SELECT id_user AS id,
-                           username AS username,
-                           user_email AS userEmail,
-                           user_role AS userRole,
-                           phone_number AS phoneNumber,
-                           created_at AS createdAt
-                    FROM Usuario
-                    WHERE (:role IS NULL OR user_role = :role)
-                    ORDER BY created_at DESC
-                """, UsuarioDTO.class)
+        if (role == null || role.isBlank()) {
+            // ← Sin WHERE → devuelve TODOS
+            return em.createQuery(
+                    "SELECT new Integrador.Pasteleria.dto.UsuarioDTO(" +
+                            "u.id, u.username, u.userEmail, CAST(u.userRole AS string), u.phoneNumber, u.createdAt) " +
+                            "FROM Usuario u " +
+                            "ORDER BY u.createdAt DESC",
+                    UsuarioDTO.class)
+                    .getResultList();
+        }
+        // ← Con WHERE → filtra por rol
+        return em.createQuery(
+                "SELECT new Integrador.Pasteleria.dto.UsuarioDTO(" +
+                        "u.id, u.username, u.userEmail, CAST(u.userRole AS string), u.phoneNumber, u.createdAt) " +
+                        "FROM Usuario u " +
+                        "WHERE u.userRole = :role " +
+                        "ORDER BY u.createdAt DESC",
+                UsuarioDTO.class)
                 .setParameter("role", role)
                 .getResultList();
     }
@@ -95,9 +102,5 @@ public class UsuarioService {
         return em.createQuery("DELETE FROM Usuario u WHERE u.idUser = :id")
                 .setParameter("id", id)
                 .executeUpdate() > 0;
-    }
-
-    public List<Usuario> listAllUsers() {
-        return Usuario.listAll(); // Si usas PanacheEntity
     }
 }

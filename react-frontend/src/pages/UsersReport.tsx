@@ -1,186 +1,187 @@
-  // src/pages/UsersReport.tsx
-  import React, { useEffect, useState } from "react";
-  import Menu from "../components/Menu";
-  import Footer from "../components/Footer";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { UsuarioDTO } from "../types/UsuarioDTO";
+import { Layout } from "../components/Layout";
 
-  interface User {
-    id: number;
-    username: string;
-    userEmail: string;
-    userRole: string;
-    phoneNumber: string;
-    createdAt: string;
-  }
+const API = "/api/public/users";
 
-  const UsersReport: React.FC = () => {
-    const [users, setUsers] = useState<User[]>([]);
-    const [filter, setFilter] = useState("");
-    const [search, setSearch] = useState("");
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+export default function UsersReport() {
+  const { role } = useAuth(); // "administrador" | "trabajador" | ...
+  const [users, setUsers] = useState<UsuarioDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
 
-    const token = localStorage.getItem("token");
+  const isAdmin = role === "administrador";
 
-    // 🔹 Cargar lista de usuarios
-    useEffect(() => {
-      console.log("TOKEN ENVIADO:", token);
-      if (!token) {
-        setError("No hay token activo. Inicia sesión como administrador.");
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      fetch(`http://localhost:8080/api/admin/users?role=${filter}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(async (res) => {
-          if (!res.ok)
-            throw new Error(`Error ${res.status}: ${await res.text()}`);
-          return res.json();
-        })
-        .then((data) => setUsers(data))
-        .catch((err) => {
-          console.error(err);
-          setError("No se pudo cargar la lista de usuarios.");
-        })
-        .finally(() => setLoading(false));
-    }, [filter]);
-
-    // 🔹 Filtrado por búsqueda
-    const filtered = users.filter(
-      (u) =>
-        u.username.toLowerCase().includes(search.toLowerCase()) ||
-        u.userEmail.toLowerCase().includes(search.toLowerCase())
-    );
-
-    // 🔹 Eliminar usuario
-    const handleDelete = (id: number) => {
-      if (!confirm("¿Eliminar este usuario?")) return;
-
-      fetch(`http://localhost:8080/api/admin/users/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Error al eliminar usuario.");
-          setUsers((prev) => prev.filter((u) => u.id !== id));
-        })
-        .catch((err) => {
-          console.error(err);
-          alert("No se pudo eliminar el usuario.");
-        });
-    };
-
-    // 🔹 Exportar Excel
-    const handleExportExcel = () => {
-      window.open(
-        `http://localhost:8080/api/admin/users/export/excel?role=${filter}`,
-        "_blank"
-      );
-    };
-
-    // ---------------- UI -----------------
-    return (
-      <>
-        <Menu />
-        <main className="min-h-screen bg-linear-to-br from-stone-50 to-rose-50 p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-stone-200">
-              <h2 className="text-2xl font-bold text-rose-600 mb-4">
-                Reporte de Usuarios
-              </h2>
-
-              {/* --- Filtros --- */}
-              <div className="flex flex-col md:flex-row gap-4 mb-4">
-                <input
-                  type="text"
-                  placeholder="Buscar por nombre o correo"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="flex-1 px-4 py-2 border border-stone-300 rounded-lg"
-                />
-                <select
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
-                  className="px-4 py-2 border border-stone-300 rounded-lg"
-                >
-                  <option value="">Todos los roles</option>
-                  <option value="cliente">Cliente</option>
-                  <option value="trabajador">Trabajador</option>
-                  <option value="administrador">Administrador</option>
-                </select>
-              </div>
-
-              {/* --- Estado de carga / error --- */}
-              {loading ? (
-                <p className="text-stone-500 text-center py-6">
-                  Cargando usuarios...
-                </p>
-              ) : error ? (
-                <p className="text-rose-600 text-center py-6">{error}</p>
-              ) : filtered.length === 0 ? (
-                <p className="text-stone-600 text-center py-6">
-                  No hay usuarios que coincidan con los filtros.
-                </p>
-              ) : (
-                <>
-                  {/* --- Tabla --- */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead className="border-b border-stone-300 bg-stone-100">
-                        <tr>
-                          <th className="pb-2 px-2 text-stone-700">Nombre</th>
-                          <th className="pb-2 px-2 text-stone-700">Correo</th>
-                          <th className="pb-2 px-2 text-stone-700">Rol</th>
-                          <th className="pb-2 px-2 text-stone-700">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filtered.map((u) => (
-                          <tr
-                            key={u.id}
-                            className="border-b border-stone-200 hover:bg-stone-50"
-                          >
-                            <td className="py-2 px-2">{u.username}</td>
-                            <td className="py-2 px-2">{u.userEmail}</td>
-                            <td className="py-2 px-2 capitalize">{u.userRole}</td>
-                            <td className="py-2 px-2 space-x-2">
-                              <button className="text-sm bg-yellow-400 text-rose-900 px-2 py-1 rounded hover:bg-yellow-300">
-                                Editar
-                              </button>
-                              <button
-                                onClick={() => handleDelete(u.id)}
-                                className="text-sm bg-rose-500 text-white px-2 py-1 rounded hover:bg-rose-600"
-                              >
-                                Eliminar
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* --- Exportar --- */}
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      onClick={handleExportExcel}
-                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                    >
-                      Exportar a Excel
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
+  const openDeleteModal = (id: number) => {
+    setUserToDelete(id);
+    setShowDeleteModal(true);
   };
 
-  export default UsersReport;
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setUserToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
+    const res = await fetch(`/api/public/users/${userToDelete}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    if (res.ok) {
+      fetchUsers(filter);
+      closeDeleteModal();
+    }
+  };
+
+  const exportExcel = () => {
+    const url = `/api/public/users/export/excel?role=${filter}`;
+    console.log("📥 Exportando Excel:", url);
+    window.open(url, "_blank");
+  };
+
+  /* -------------------- lectura -------------------- */
+  const fetchUsers = async (roleFilter = "") => {
+    setLoading(true);
+    try {
+      const res = await fetch(roleFilter ? `${API}?role=${roleFilter}` : API, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const data = await res.json();
+      console.log("📦 Usuarios recibidos:", data);
+      setUsers(data);
+    } catch (err: any) {
+      console.error("❌ Error en fetchUsers:", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers(filter);
+  }, [filter]);
+
+  /* -------------------- render -------------------- */
+  if (loading) return <p>Cargando...</p>;
+
+  return (
+    <Layout>
+      <div className="p-6 bg-white rounded-xl shadow-lg">
+        <h1 className="text-2xl font-bold text-rose-700 mb-4">
+          Reporte de usuarios
+        </h1>
+
+        {/* Filtro estilizado */}
+        <select
+          className="mb-4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
+          value={filter}
+          onChange={(e) => fetchUsers(e.target.value)}
+        >
+          <option value="">Todos los roles</option>
+          <option value="cliente">Cliente</option>
+          <option value="trabajador">Trabajador</option>
+          <option value="administrador">Administrador</option>
+        </select>
+
+        {/* Tabla con estilo Tailwind */}
+        {users.length === 0 ? (
+          <p className="text-gray-500">No hay usuarios para este filtro.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            {isAdmin && (
+              <button
+                onClick={exportExcel}
+                className="ml-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+              >
+                Exportar Excel
+              </button>
+            )}
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nombre
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rol
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Creado
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.map((u) => (
+                  <tr key={u.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                      {u.id}
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                      {u.username}
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                      {u.userEmail}
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <span className="badge">{u.userRole}</span>
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(u.createdAt).toLocaleDateString()}
+                    </td>
+                    {isAdmin && (
+                      <td className="p-2 text-center">
+                        <button
+                          onClick={() => openDeleteModal(u.id!)}
+                          className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-80 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              ¿Eliminar usuario?
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={closeDeleteModal}
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Layout>
+  );
+}

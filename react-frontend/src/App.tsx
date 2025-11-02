@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -19,8 +19,6 @@ import Account from "./pages/Account";
 import Stores from "./pages/Stores";
 import Contact from "./pages/Contact";
 import UsersReport from "./pages/UsersReport";
-import AdminReportsPage from "./pages/AdminReportsPage";
-import WorkerReportsPage from "./pages/WorkerReportsPage";
 import CartPage from "./pages/CartPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
@@ -29,7 +27,7 @@ function App(): React.ReactElement {
     <Router>
       <div className="app-container">
         <Routes>
-          {/* Rutas públicas */}
+          {/* públicas */}
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -37,75 +35,31 @@ function App(): React.ReactElement {
           <Route path="/contact" element={<Contact />} />
           <Route path="/products" element={<Products />} />
 
-          {/* Auth pages */}
+          {/* auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-          {/* Cliente: rutas protegidas */}
-          <Route
-            path="/account"
-            element={
-              <ProtectedRoute
-                allowedRoles={["cliente", "administrador", "trabajador"]}
-              >
-                <Account />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cart"
-            element={
-              <ProtectedRoute allowedRoles={["cliente"]}>
-                <CartPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/pay"
-            element={
-              <ProtectedRoute allowedRoles={["cliente"]}>
-                <Pay />
-              </ProtectedRoute>
-            }
-          />
+          {/* ámbito cliente */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/account" element={<Account />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/pay" element={<Pay />} />
+          </Route>
 
-          {/* Administrador */}
-          <Route
-            path="/admin/reports"
-            element={
-              <ProtectedRoute allowedRoles={["administrador"]}>
-                <AdminReportsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/reports/users"
-            element={
-              <ProtectedRoute allowedRoles={["administrador"]}>
-                <UsersReport />
-              </ProtectedRoute>
-            }
-          />
+          {/* ámbito worker / admin */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/worker/reports/users" element={<UsersReport />} />
+          </Route>
 
-          {/* Trabajador (y admin) */}
-          <Route
-            path="/worker/reports"
-            element={
-              <ProtectedRoute allowedRoles={["trabajador", "administrador"]}>
-                <WorkerReportsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/worker/reports/users"
-            element={
-              <ProtectedRoute allowedRoles={["trabajador", "administrador"]}>
-                <UsersReport />
-              </ProtectedRoute>
-            }
-          />
+          {/* ámbito admin */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin/reports/users" element={<UsersReport />} />
+          </Route>
+
+          {/* 404 */}
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </div>
     </Router>

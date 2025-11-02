@@ -14,6 +14,7 @@ import java.util.List;
 public class UsuarioExportService {
 
     public Response exportExcel(List<UsuarioDTO> list) throws IOException {
+        System.out.println("📊 Creando Excel con " + list.size() + " filas");
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Usuarios");
 
@@ -40,6 +41,7 @@ public class UsuarioExportService {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         workbook.write(out);
         workbook.close();
+        System.out.println("✅ Excel generado: " + out.size() + " bytes");
 
         return Response
                 .ok(out.toByteArray())

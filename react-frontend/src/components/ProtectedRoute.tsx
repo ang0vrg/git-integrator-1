@@ -1,32 +1,38 @@
-// src/components/ProtectedRoute.tsx
-import { Navigate } from "react-router-dom";
-import { ReactNode } from "react";
+import React from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+console.log("🔑 ProtectedRoute MONTADO – pathname:", location.pathname);
+const ROLE_PATHS: Record<string, string[]> = {
+  cliente: ["/account", "/cart", "/pay"],
+  trabajador: ["/account", "/worker"],
+  administrador: ["/account", "/admin"],
+};
 
-interface ProtectedRouteProps {
-  children: ReactNode;
-  allowedRoles?: string[]; // roles permitidos, opcional
-}
+export const ProtectedRoute = () => {
+  const { user, role } = useAuth();
+  const location = useLocation();
 
-export const ProtectedRoute = ({
-  children,
-  allowedRoles,
-}: ProtectedRouteProps) => {
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
-
-  // 🔹 1. Verifica existencia de token
-  if (!token) {
-    localStorage.removeItem("role"); // Limpia datos residuales
-    return <Navigate to="/login" replace />;
+  /* 1º – aún no sabemos si hay token → no decidimos nada */
+  if (user === undefined || role === undefined) {
+    return <div className="p-4">Verificando sesión...</div>; // o un spinner
   }
 
-  // 🔹 2. Verifica roles permitidos si se especifican
-  if (allowedRoles && allowedRoles.length > 0) {
-    if (!role || !allowedRoles.includes(role)) {
-      return <Navigate to="/403" replace />; // Página 403 prohibido (mejor UX)
-    }
+  /* 2º – seguro: no hay login */
+  if (!user || !role) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // 🔹 3. Todo correcto → renderiza hijos
-  return <>{children}</>;
+  /* 3º – comprobar permisos */
+  const allowed = ROLE_PATHS[role] ?? [];
+  const ok = allowed.some((p) => location.pathname.startsWith(p));
+  console.table({
+    pathname: location.pathname,
+    user,
+    role,
+    allowed: ROLE_PATHS[role ?? ""] ?? [],
+    ok: (ROLE_PATHS[role ?? ""] ?? []).some((p) =>
+      location.pathname.startsWith(p)
+    ),
+  });
+  return ok ? <Outlet /> : <Navigate to="/unauthorized" replace />;
 };

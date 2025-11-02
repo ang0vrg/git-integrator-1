@@ -7,7 +7,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.mailer.reactive.ReactiveMailer;
-import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -82,100 +81,137 @@ public class PasswordResetService {
     private String buildEmailBody(String resetLink) {
         return """
             <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                    body { 
-                        font-family: 'Arial', sans-serif; 
-                        color: #333; 
-                        margin: 0; 
-                        padding: 0; 
-                        background-color: #f5f5f5;
+                <html lang="es">
+                <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Restablecer Contraseña - Pastelería Chantilly</title>
+                  <style>
+                    body {
+                      font-family: 'Arial', sans-serif;
+                      color: #333;
+                      margin: 0;
+                      padding: 0;
+                      background-color: #f9f9f9;
                     }
-                    .container { 
-                        max-width: 600px; 
-                        margin: 0 auto; 
-                        background: white;
+
+                    .container {
+                      max-width: 600px;
+                      margin: 40px auto;
+                      background: #ffffff;
+                      border-radius: 10px;
+                      overflow: hidden;
+                      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
                     }
-                    .header { 
-                        background: #7C5652; 
-                        color: white; 
-                        padding: 25px; 
-                        text-align: center; 
+
+                    .header {
+                      background: #c10007;
+                      color: #ffffff;
+                      padding: 25px;
+                      text-align: center;
                     }
-                    .content { 
-                        padding: 25px; 
-                        line-height: 1.6;
+
+                    .header h1 {
+                      margin: 0;
+                      font-size: 1.8em;
+                      letter-spacing: 1px;
                     }
-                    .button { 
-                        background: #7C5652; 
-                        color: white; 
-                        padding: 14px 28px; 
-                        text-decoration: none; 
-                        border-radius: 6px; 
-                        display: inline-block;
-                        font-weight: bold;
-                        margin: 15px 0;
+
+                    .content {
+                      padding: 30px;
+                      line-height: 1.7;
                     }
-                    .footer { 
-                        text-align: center; 
-                        padding: 20px; 
-                        font-size: 12px; 
-                        color: #666;
-                        background: #f9f9f9;
+
+                    .content h2 {
+                      color: #c10007;
+                      font-size: 1.4em;
+                      margin-bottom: 12px;
                     }
-                    .token { 
-                        background: #f0f0f0; 
-                        padding: 12px; 
-                        border-radius: 4px; 
-                        font-family: 'Courier New', monospace;
-                        word-break: break-all;
-                        margin: 15px 0;
+
+                    .button {
+                      background: #fdc700;
+                      color: #000000;
+                      padding: 14px 28px;
+                      text-decoration: none;
+                      border-radius: 8px;
+                      display: inline-block;
+                      font-weight: bold;
+                      margin: 18px 0;
+                      transition: all 0.3s ease;
                     }
+
+                    .button:hover {
+                      background: #e5b800;
+                    }
+
+                    .token {
+                      background: #f5f5f5;
+                      border-left: 4px solid #fdc700;
+                      padding: 12px;
+                      border-radius: 6px;
+                      font-family: 'Courier New', monospace;
+                      word-break: break-all;
+                      margin: 15px 0;
+                      color: #555;
+                    }
+
                     .warning {
-                        color: #d9534f;
-                        font-weight: bold;
-                        background: #fff3f3;
-                        padding: 10px;
-                        border-radius: 4px;
-                        border-left: 4px solid #d9534f;
+                      color: #c10007;
+                      font-weight: bold;
+                      background: #fff4f4;
+                      padding: 12px;
+                      border-radius: 6px;
+                      border-left: 4px solid #c10007;
+                      text-align: center;
+                      margin: 20px 0;
                     }
-                </style>
-            </head>
-            <body>
-                <div class="container">
+
+                    .footer {
+                      text-align: center;
+                      padding: 20px;
+                      font-size: 12px;
+                      color: #666;
+                      background: #f0f0f0;
+                    }
+
+                    .footer p {
+                      margin: 5px 0;
+                    }
+                  </style>
+                </head>
+                <body>
+                  <div class="container">
                     <div class="header">
-                        <h1>Pastelería Chantilly</h1>
+                      <h1>Pastelería Chantilly</h1>
                     </div>
                     <div class="content">
-                        <h2>Restablecer tu Contraseña</h2>
-                        <p>Hola,</p>
-                        <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta.</p>
-                        <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
-                        
-                        <div style="text-align: center;">
-                            <a href="%s" class="button">Restablecer Contraseña</a>
-                        </div>
-                        
-                        <p>O copia y pega este enlace en tu navegador:</p>
-                        <div class="token">%s</div>
-                        
-                        <div class="warning">
-                            ⚠️ <strong>ESTE ENLACE EXPIRARÁ EN 15 MINUTOS</strong>
-                        </div>
-                        
-                        <p>Si no solicitaste este restablecimiento, por favor ignora este email.</p>
-                        <p>Atentamente,<br>El equipo de Pastelería Chantilly</p>
+                      <h2>Restablecer tu Contraseña</h2>
+                      <p>Hola,</p>
+                      <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta.</p>
+                      <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
+
+                      <div style="text-align: center;">
+                        <a href="%s" class="button">Restablecer Contraseña</a>
+                      </div>
+
+                      <p>O copia y pega este enlace en tu navegador:</p>
+                      <div class="token">%s</div>
+
+                      <div class="warning">
+                        ⚠️ <strong>ESTE ENLACE EXPIRARÁ EN 15 MINUTOS</strong>
+                      </div>
+
+                      <p>Si no solicitaste este restablecimiento, por favor ignora este correo.</p>
+                      <p>Atentamente,<br><strong>El equipo de Pastelería Chantilly</strong></p>
                     </div>
                     <div class="footer">
-                        <p>© 2024 Pastelería Chantilly. Todos los derechos reservados.</p>
-                        <p>Este es un email automático, por favor no respondas a este mensaje.</p>
+                      <p>© 2024 Pastelería Chantilly. Todos los derechos reservados.</p>
+                      <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
                     </div>
-                </div>
-            </body>
-            </html>
+                  </div>
+                </body>
+                </html>
+
             """.formatted(resetLink, resetLink);
     }
 

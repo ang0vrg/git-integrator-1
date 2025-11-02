@@ -9,7 +9,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
-
 @Path("/api/admin")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -48,6 +47,8 @@ public class AdminResource {
     @Path("/users/export/excel")
     @Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public Response exportExcel(@QueryParam("role") String role) throws Exception {
-        return exportService.exportExcel(usuarioService.listUsers(role));
+        List<UsuarioDTO> list = usuarioService.listUsers(role);
+        System.out.println("📦 Usuarios a exportar: " + list.size() + " registros");
+        return exportService.exportExcel(list);
     }
 }
