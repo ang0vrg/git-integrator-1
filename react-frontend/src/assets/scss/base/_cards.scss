@@ -1,0 +1,54 @@
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: visible;
+    transition: transform $transition-speed ease-in-out, box-shadow $transition-speed;
+    cursor: pointer;
+    z-index: 1;
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        z-index: 2;
+        
+        &::after {
+            opacity: 1;
+            transform: translateY(-10px) rotate(5deg);
+        }
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0px;
+        right: -10px;
+        width: 90px;
+        height: 90px;
+        background-image: url('img/ChantyFiesta.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        opacity: 0;
+        transition: opacity $transition-speed ease-out, transform 0.5s ease-out;
+    }
+
+    img {
+        width: 300px;
+        height: 300px;
+        object-fit: cover;
+        max-width: 100%;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+
+    h3 {
+        color: darken($color-primary, 10%);
+    }
+
+    p {
+        font-weight: bold;
+        margin: 10px 0;
+    }
+}

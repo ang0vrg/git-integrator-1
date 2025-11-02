@@ -1,0 +1,144 @@
+.nosotros-hero {
+    display: flex;
+    min-height: 100vh;
+    max-width: 100%;
+    margin: 0;
+    transition: background-image 0.5s ease-in-out;
+    background-size: cover;
+    background-position: center;
+    padding: 0;
+    position: relative;
+    background-image: url('img/nosotrosFondo.png');
+
+    @include tablet {
+        flex-direction: column;
+        min-height: auto;
+    }
+    
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4); 
+        z-index: 1;
+    }
+
+    & > div {
+        position: relative;
+        z-index: 2;
+    }
+}
+
+.nosotros-background {
+    flex: 1;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 5%;
+    color: $color-text-light;
+    
+    @include tablet {
+        height: 50vh;
+        justify-content: center;
+        padding: 40px 5%;
+        position: relative;
+    }
+}
+
+.overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 5%;
+    text-align: justify;
+
+    @include tablet {
+        position: static;
+        height: auto;
+        min-height: 100%;
+        padding: 40px 5%;
+        box-sizing: border-box;
+    }
+}
+
+.nosotros-title {
+    margin-left: 5%;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: $color-secondary;
+    margin-bottom: 20px;
+    line-height: 1.1;
+
+    @include tablet {
+        font-size: 2.5rem;
+    }
+}
+
+.nosotros-text {
+    margin-top: 2%;
+    margin-left: 5%;
+    font-size: small;
+    color: white;
+    max-width: 80%;
+    margin: relative;
+
+    @include tablet {
+        max-width: 100%;
+        font-size: 1.1rem;
+        text-align: justify;
+    }
+}
+
+.mision-vision-container {
+    flex: 1;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px 40px;
+
+    @include tablet {
+        padding: 40px 20px;
+    }
+
+    .mision-box, .vision-box {
+        background: white;
+        padding: 30px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: left;
+        transition: transform $transition-speed ease-in-out, box-shadow $transition-speed;
+        cursor: pointer;
+
+        &:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba($color-primary, 0.4);
+        }
+    }
+
+    .mision-title, .vision-title {
+        font-size: 1.8rem;
+        color: $color-secondary;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .mision-box p, .vision-box p {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: $color-text-dark;
+        margin: 0;
+    }
+}

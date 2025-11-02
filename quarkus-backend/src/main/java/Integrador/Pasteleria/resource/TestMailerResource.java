@@ -18,7 +18,8 @@ public class TestMailerResource {
     @ConfigProperty(name = "MAIL_TEST_RECIPIENT", defaultValue = "test@example.com")
     String testRecipient;
 
-    @ConfigProperty(name = "QUARKUS_MAILER_FROM")
+    // Provide a safe default so dev startup doesn't fail if the env var is not set.
+    @ConfigProperty(name = "QUARKUS_MAILER_FROM", defaultValue = "no-reply@localhost")
     String mailFrom;
 
     @GET

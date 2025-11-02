@@ -1,10 +1,17 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
-import PersonalizarPedido from "./components/PersonalizarPedido/PersonalizarPedido";
+import React, { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';   // ← reset / tipografía
+import './App.css';      // ← carga Tailwind
+import App from './App'; 
 
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <PersonalizarPedido />
-  </React.StrictMode>
-);
+const container = document.getElementById('root');
+
+if (container) {
+  createRoot(container).render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  );
+} else {
+  console.error("El elemento con id 'root' no se encontró en el documento HTML.");
+}

@@ -1,56 +1,130 @@
-// frontend/src/App.tsx
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import "./App.css";
 
-// frontend/src/App.tsx
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Home from "./pages/Home";
+import Products from "./pages/Products";
+import Pay from "./pages/Pay";
+import About from "./pages/About";
+import Account from "./pages/Account";
+import Stores from "./pages/Stores";
+import Contact from "./pages/Contact";
+import UsersReport from "./pages/UsersReport";
+import AdminReportsPage from "./pages/AdminReportsPage";
+import WorkerReportsPage from "./pages/WorkerReportsPage";
+import CartPage from "./pages/CartPage";
+import AplicacionAdmin from "./admin/AplicacionAdmin";
+import AplicacionAdminDev from "./admin/AplicacionAdminDev";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
-// === Importaciones de Autenticación (Existentes) ===
-import Login from './components/Login/Login'; 
-import Register from './components/Register/Register';
-import ForgotPassword from './components/ForgotPassword/ForgotPassword';
-import ResetPassword from './components/ResetPassword/ResetPassword';
-
-// === Importaciones de Vistas ===
-import Index from './components/Index/index';
-import Nosotros from './components/Nosotros/nosotros';
-import Productos from './components/Productos/productos';
-import Tiendas from './components/Tiendas/tiendas';
-import Contacto from './components/Contacto/contacto';
-import Pago from './components/Pago/pago';
-import Cuenta from './components/Cuenta/cuenta';
-import PersonalizarPedido from './components/PersonalizarPedido/PersonalizarPedido';
-
-import './App.css'; 
-
-function App(): React.ReactElement { 
+function App(): React.ReactElement {
   return (
     <Router>
       <div className="app-container">
         <Routes>
-          
-          {/*RUTAS DE ACCESO RÁPIDO*/}
-          <Route path="/" element={<Navigate to="/inicio" replace />} />
+          {/* Rutas públicas */}
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/stores" element={<Stores />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/products" element={<Products />} />
+
+          {/* Auth pages */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-          {/*RUTAS DE LA PAG. PRINCIPAL*/}
-          
-          <Route path="/inicio" element={<Index />} />
-          <Route path="/nosotros" element={<Nosotros />} />
-          <Route path="/productos" element={<Productos />} />
-          <Route path="/tiendas" element={<Tiendas />} />
-          <Route path="/personalizar" element={<PersonalizarPedido />} />
-          <Route path="/contacto" element={<Contacto />} />
-          <Route path="/pago" element={<Pago />} />
-          <Route path="/cuenta" element={<Cuenta />} />
+          {/* Cliente: rutas protegidas */}
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute
+                allowedRoles={["cliente", "administrador", "trabajador"]}
+              >
+                <Account />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute allowedRoles={["cliente"]}>
+                <CartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pay"
+            element={
+              <ProtectedRoute allowedRoles={["cliente"]}>
+                <Pay />
+              </ProtectedRoute>
+            }
+          />
 
+          {/* Administrador */}
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute allowedRoles={["administrador"]}>
+                <AdminReportsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports/users"
+            element={
+              <ProtectedRoute allowedRoles={["administrador"]}>
+                <UsersReport />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Trabajador (y admin) */}
+          <Route
+            path="/worker/reports"
+            element={
+              <ProtectedRoute allowedRoles={["trabajador", "administrador"]}>
+                <WorkerReportsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/worker/reports/users"
+            element={
+              <ProtectedRoute allowedRoles={["trabajador", "administrador"]}>
+                <UsersReport />
+              </ProtectedRoute>
+            }
+          />
+          {/* Panel de administración (React-Admin) */}
+          {/* Ruta temporal para desarrollo: admin-dev abre el panel SIN protección
+              Usar sólo en local mientras el backend/auth no está listo. */}
+          <Route path="/admin-dev" element={<AplicacionAdminDev />} />
+
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute allowedRoles={["administrador"]}>
+                <AplicacionAdmin />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </Router>
-  )
+  );
 }
 
 export default App;

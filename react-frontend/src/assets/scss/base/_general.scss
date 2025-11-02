@@ -1,0 +1,26 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: $font-stack;
+    background: $color-background;
+    color: $color-text-dark;
+    line-height: 1.6;
+}
+
+main {
+    flex-grow: 1;
+}
+
+nav {
+    display: flex;
+    gap: 15px;
+}
+
+section {
+    padding: 40px 20px;
+    text-align: center;
+}

@@ -3,6 +3,8 @@ package Integrador.Pasteleria.resource;
 
 import Integrador.Pasteleria.dto.LoginRequest;
 import Integrador.Pasteleria.dto.RegisterRequest;
+import Integrador.Pasteleria.dto.ForgotPasswordRequest;
+import Integrador.Pasteleria.dto.ResetPasswordRequest;
 import Integrador.Pasteleria.entity.Usuario;
 import Integrador.Pasteleria.service.PasswordResetService;
 import Integrador.Pasteleria.service.UsuarioService;
@@ -27,12 +29,19 @@ import java.util.Base64;
 import java.util.Optional;
 import java.util.HashSet;
 import java.util.Arrays;
+import static java.util.Map.of;
+import static java.util.Map.ofEntries;
+import java.util.Map;
+import java.util.Set;
+import java.time.LocalDateTime;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.SecretKey;
 import java.security.Key;
 
 @Path("/auth")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class AuthResource {
 
     @Inject
@@ -120,6 +129,7 @@ public class AuthResource {
     // ENDPOINTS
     // ============================================================================
 
+    /* ---------- 2. REGISTER ---------- */
     @POST
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -131,8 +141,10 @@ public class AuthResource {
         if (!password.equals(confirmPassword)) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Las contraseñas no coinciden").build();
         }
-        if (usuarioService.findByUserEmail(request.getEmail()).isPresent()) {
-            return Response.status(Response.Status.CONFLICT).entity("Usuario ya existe").build();
+    if (usuarioService.findByUserEmail(request.getEmail()).isPresent()) {
+            return Response.status(409)
+                    .entity(of("ok", false, "msg", "El usuario ya existe"))
+                    .build();
         }
         try {
             Usuario newUser = new Usuario();
@@ -144,12 +156,12 @@ public class AuthResource {
 
             usuarioService.saveUser(newUser);
 
-            String token = Jwt.upn(newUser.getUserEmail())
-                    .groups(new HashSet<>(Arrays.asList(newUser.getUserRole().name())))
-                    .expiresIn(3600)
-                    .sign(SECRET_KEY);
+        String token = Jwt.upn(newUser.getUserEmail())
+            .groups(new HashSet<>(Arrays.asList(newUser.getUserRole().name())))
+            .expiresIn(3600)
+            .sign(SECRET_KEY);
 
-            return Response.ok(token).build();
+        return Response.ok(of("ok", true, "token", token, "role", newUser.getUserRole().name())).build();
 
         } catch (PersistenceException e) {
             e.printStackTrace();
@@ -181,42 +193,48 @@ public class AuthResource {
                         .build();
             }
 
-            String token = Jwt.upn(usuario.getUserEmail())
-                    .groups(new HashSet<>(Arrays.asList(usuario.getUserRole().name())))
-                    .expiresIn(3600)
-                    .sign(SECRET_KEY);
-            return Response.ok(token).build();
+        String token = Jwt.upn(usuario.getUserEmail())
+            .groups(new HashSet<>(Arrays.asList(usuario.getUserRole().name())))
+            .expiresIn(3600)
+            .sign(SECRET_KEY);
+        return Response.ok(of("ok", true, "token", token, "role", usuario.getUserRole().name())).build();
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Ocurrió un error en el servidor. Inténtalo de nuevo más tarde.")
+            return Response.status(500)
+                    .entity(of("ok", false, "msg", "Error interno: " + e.getMessage()))
                     .build();
         }
     }
 
+    /* ---------- 1. LOGIN ---------- */
+    // Removed duplicate/erroneous forgotPassword implementation; the valid POST /forgot-password endpoint is implemented below.
+
+    /* ---------- 3. FORGOT-PASSWORD ---------- */
     @POST
     @Path("/forgot-password")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response forgotPassword(ForgotPasswordRequest request) {
-        Optional<Usuario> optionalUser = usuarioService.findByUserEmail(request.getEmail());
-        if (optionalUser.isEmpty()) {
-            return Response
-                    .ok("Si la dirección de correo está registrada, recibirás un enlace para restablecer tu contraseña")
-                    .build();
+    public Response forgotPassword(ForgotPasswordRequest req) {
+        Optional<Usuario> opt = usuarioService.findByUserEmail(req.getEmail());
+        if (opt.isPresent()) {
+            String token = passwordResetService.generateResetToken(req.getEmail());
+            return Response.ok(of(
+                    "ok", true,
+                    "msg", "Se ha enviado un enlace a tu correo",
+                    "token", token 
+            )).build();
         }
-        String resetToken = passwordResetService.generateResetToken(request.getEmail());
-        return Response.ok("Token de restablecimiento generado: " + resetToken).build();
+        return Response.ok(of(
+                "ok", true,
+                "msg", "Si la dirección existe, recibirás un enlace para restablecer tu contraseña")).build();
     }
 
+    /* ---------- 4. RESET-PASSWORD ---------- */
     @POST
     @Path("/reset-password")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
     public Response resetPassword(ResetPasswordRequest request) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("Las contraseñas no coinciden.").build();
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("ok", false, "msg", "Las contraseñas no coinciden."))
+                    .build();
         }
 
         Optional<String> optionalEmail = passwordResetService.validateResetToken(request.getToken());

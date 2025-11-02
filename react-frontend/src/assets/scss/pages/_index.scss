@@ -1,0 +1,92 @@
+//Estilo Index
+.hero-banner {
+    display: flex;
+    min-height: 450px;
+    max-width: 100%;
+    margin: 0;
+
+    @include mobile {
+        flex-direction: column;
+        min-height: auto;
+    }
+}
+
+.hero-text {
+    flex: 1;
+    padding: 60px 5%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+    overflow: hidden;
+    background-color: $color-primary;
+    color: white;
+    text-align: left;
+
+    @include mobile {
+        padding: 40px 5%;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .hero-box {
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin: 0;
+            color: $color-text-light;
+            
+            @include mobile {
+                font-size: 2.2rem;
+            }
+        }
+    }
+
+    .highlight {
+        color: $color-secondary;
+        font-size: 1.3em;
+        display: inline-block;
+        font-weight: 900;
+        margin-top: 5px;
+    }
+}
+
+.hero-content {
+    flex: 1;
+    padding: 0px;
+
+    @include mobile {
+        height: 350px;
+        width: 100%;
+    }
+}
+
+.hero-video-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+
+    .hero-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.productos-destacados {
+    padding: 40px 0;
+
+    h2 {
+        font-size: 1.8rem;
+        margin-bottom: 40px;
+        color: darken($color-primary, 5%);
+        font-weight: 300;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+    }
+}

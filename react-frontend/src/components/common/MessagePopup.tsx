@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 
 interface MessagePopupProps {
     message: string | null; 
@@ -6,28 +6,34 @@ interface MessagePopupProps {
 }
 
 const MessagePopup: FC<MessagePopupProps> = ({ message, isError }) => {
-    if (!message) {
-        return null;
+  /* control interno para animar entrada/salida */
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (message) {
+      setShow(true);
+      const t = setTimeout(() => setShow(false), 4000);
+      return () => clearTimeout(t);
+    } else {
+      setShow(false);
     }
+  }, [message]);
 
-    const popupStyle: React.CSSProperties = {
-        backgroundColor: isError ? '#dc3545' : '#28a745',
-        padding: '10px',
-        marginTop: '15px',
-        color: 'white',
-        borderRadius: '4px',
-        textAlign: 'center',
-        fontWeight: 'bold',
-    };
+  if (!message && !show) return null;
 
-    return (
-        <div 
-            className={`message-popup ${isError ? 'error' : 'success'}`}
-            style={popupStyle}
-        >
-            {message}
-        </div>
-    );
+  return (
+    <div
+      className={`fixed top-8 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg shadow-xl text-white text-sm font-semibold z-50 transition-all duration-300
+                  ${
+                    show
+                      ? "opacity-100 scale-100"
+                      : "opacity-0 scale-95 pointer-events-none"
+                  }
+                  ${isError ? "bg-red-600" : "bg-green-600"}`}
+    >
+      {message}
+    </div>
+  );
 };
 
 export default MessagePopup;

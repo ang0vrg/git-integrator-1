@@ -1,0 +1,33 @@
+// react-frontend\src\assets\scss\layouts\_login-layout.scss
+.my-login {
+  background-image: url('https://scontent.flim33-1.fna.fbcdn.net/v/t1.6435-9/36375140_1799992273372918_7615288594210488320_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Chdk0AFwB2IQ7kNvwEI9R26&_nc_oc=Adn4hM27NG95S0IT2XLmXnmOcC3pr4zQky3aFx5goDMP833N_QU0pM2peGpXqPEhj20&_nc_zt=23&_nc_ht=scontent.flim33-1.fna&_nc_gid=Nwrp9K5q319d20bbmDkXIQ&oh=00_AfaDA_8dsCkPSR1I8n1mJhkWHEL_rrWUMpz3Jot7CTSEIQ&oe=690181C7');
+  @include background-cover;
+  background-attachment: fixed;
+
+  min-height: 90vh;
+  border-radius: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px;
+  box-sizing: border-box;
+  box-shadow: inset 0px 0px 10px 0 rgba(20, 20, 20, 0.9);
+
+  h2, p {
+    color: $text-light;
+    text-shadow: 1px 1px 4px rgba(88, 88, 88, 0.9);
+    z-index: 20;
+    margin-bottom: 5px;
+  }
+
+  @include responsive($tablet) {
+    justify-content: flex-start;
+    padding-top: 15vh;
+  }
+
+  @include responsive($mobile) {
+    justify-content: flex-start;
+    padding-top: 10vh;
+  }
+}

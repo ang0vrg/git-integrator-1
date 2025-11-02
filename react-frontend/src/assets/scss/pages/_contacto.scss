@@ -1,0 +1,134 @@
+.contact-hero-section {
+    background: #f1efe8;
+    padding: 20px;
+    text-align: center;
+    position: relative; // Necesario para el pseudoelemento ::after
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 60px;
+        height: 60px;
+        background-color: $color-primary; 
+        border-bottom-left-radius: 100%;
+        z-index: 50; 
+        clip-path: circle(50% at 100% 0);
+    }
+}
+
+.contact-header {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 0;
+    position: relative;
+
+    h2 {
+        font-size: 1.5rem;
+        color: $color-text-dark;
+        margin-bottom: 5px;
+        font-weight: 700;
+    }
+
+    p {
+        font-size: 0.9rem;
+        color: #777;
+    }
+}
+
+.contact-form-section {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 20px;
+    text-align: left;
+
+    @include small-mobile {
+        margin: 20px auto;
+        padding: 15px;
+    }
+
+    h3 {
+        font-size: 1.5rem;
+        color: $color-text-dark;
+        margin-bottom: 30px;
+        font-weight: 500;
+    }
+}
+
+.contact-form {
+    label {
+        display: block;
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .group-label {
+        margin-bottom: 10px;
+        color: $color-text-dark;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color $transition-speed;
+
+        &:focus {
+            border-color: $color-primary;
+        }
+    }
+
+    textarea {
+        resize: vertical;
+    }
+
+    .name-fields {
+        display: flex;
+        gap: 20px;
+        
+        @include small-mobile {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+        }
+    }
+
+    .captcha-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .captcha-field {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .captcha-text {
+        font-weight: bold;
+        color: $color-text-dark;
+        padding: 10px 0;
+        font-size: 1.1rem;
+    }
+
+    .captcha-field input {
+        width: 80px;
+        text-align: center;
+    }
+}
