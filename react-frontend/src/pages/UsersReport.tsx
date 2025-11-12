@@ -9,7 +9,7 @@ export default function UsersReport() {
   const { role } = useAuth(); // "administrador" | "trabajador" | ...
   const [users, setUsers] = useState<UsuarioDTO[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("");
+  const [search, setSearch] = useState(""); // ← barra de búsqueda
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | null>(null);
 
@@ -32,22 +32,28 @@ export default function UsersReport() {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
     if (res.ok) {
-      fetchUsers(filter);
+      fetchUsers();
       closeDeleteModal();
     }
   };
 
   const exportExcel = () => {
-    const url = `/api/public/users/export/excel?role=${filter}`;
+    const url = `/api/public/users/export/excel?q=${encodeURIComponent(
+      search
+    )}`;
     console.log("📥 Exportando Excel:", url);
     window.open(url, "_blank");
   };
 
-  /* -------------------- lectura -------------------- */
-  const fetchUsers = async (roleFilter = "") => {
+  /* -------------------- búsqueda + lectura -------------------- */
+  const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(roleFilter ? `${API}?role=${roleFilter}` : API, {
+      const url = search
+        ? `/api/public/users/search?q=${encodeURIComponent(search)}`
+        : "/api/public/users";
+
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -62,11 +68,10 @@ export default function UsersReport() {
   };
 
   useEffect(() => {
-    fetchUsers(filter);
-  }, [filter]);
+    fetchUsers();
+  }, [search]); // ← se ejecuta cada vez que cambia "search"
 
   /* -------------------- render -------------------- */
-  if (loading) return <p>Cargando...</p>;
 
   return (
     <Layout>
@@ -75,17 +80,15 @@ export default function UsersReport() {
           Reporte de usuarios
         </h1>
 
-        {/* Filtro estilizado */}
-        <select
-          className="mb-4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
-          value={filter}
-          onChange={(e) => fetchUsers(e.target.value)}
-        >
-          <option value="">Todos los roles</option>
-          <option value="cliente">Cliente</option>
-          <option value="trabajador">Trabajador</option>
-          <option value="administrador">Administrador</option>
-        </select>
+        {/* Barra de búsqueda (sin dropdown) */}
+        <input
+          type="text"
+          placeholder="Buscar por nombre, email o rol..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onBlur={fetchUsers} // o onKeyUp para búsqueda en tiempo real
+          className="mb-4 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
+        />
 
         {/* Tabla con estilo Tailwind */}
         {users.length === 0 ? (

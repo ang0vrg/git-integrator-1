@@ -69,8 +69,8 @@ CREATE TABLE DetallePedido (
 -- ============================
 CREATE TABLE Venta (
   id_sale INT AUTO_INCREMENT PRIMARY KEY,
-  sale_type ENUM('Efectivo','Tarjeta') NOT NULL,
-  sale_status ENUM('PENDIENTE','Confirmado','Rechazado') DEFAULT 'Pendiente',
+  sale_type ENUM('EFECTIVO','TARJETA') NOT NULL,
+  sale_status ENUM('PENDIENTE','CONFIRMADO','RECHAZADO') DEFAULT 'PENDIENTE',
   sale_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   sale_subtotal DECIMAL(10,2) NOT NULL,
   id_order INT NOT NULL,
