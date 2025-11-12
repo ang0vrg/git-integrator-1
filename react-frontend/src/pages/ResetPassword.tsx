@@ -63,7 +63,7 @@ const ResetPassword: React.FC = () => {
                  bg-fixed bg-cover bg-center"
         style={{
           backgroundImage:
-            "url('https://scontent.flim33-1.fna.fbcdn.net/v/t1.6435-9/36375140_1799992273372918_7615288594210488320_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Chdk0AFwB2IQ7kNvwEI9R26&_nc_oc=Adn4hM27NG95S0IT2XLmXnmOcC3pr4zQky3aFx5goDMP833N_QU0pM2peGpXqPEhj20&_nc_zt=23&_nc_ht=scontent.flim33-1.fna&_nc_gid=Nwrp9K5q319d20bbmDkXIQ&oh=00_AfaDA_8dsCkPSR1I8n1mJhkWHEL_rrWUMpz3Jot7CTSEIQ&oe=690181C7')",
+            "url('/img/Background_3.jpg')",
         }}
       >
         <div className="w-full max-w-md bg-white/10 backdrop-blur-sm rounded-xl shadow-2xl p-8 text-gray-800">

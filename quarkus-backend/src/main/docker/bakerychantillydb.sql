@@ -48,18 +48,20 @@ CREATE TABLE Pedido (
   order_discount DECIMAL(10,2) DEFAULT 0,
   order_total DECIMAL(10,2),
   id_user INT NOT NULL,
-  FOREIGN KEY (id_user) REFERENCES Usuario(id_user) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY (id_user) REFERENCES Usuario(id_user) ON DELETE CASCADE ON UPDATE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- ============================
 -- TABLA DETALLE_PEDIDO
 -- ============================
 CREATE TABLE DetallePedido (
-  id_order INT AUTO_INCREMENT PRIMARY KEY,
+  id_order_detail INT AUTO_INCREMENT PRIMARY KEY,
+  id_order INT,
   id_product INT,
   quantity INT NOT NULL,
   price DECIMAL(10,2) NOT NULL,
-  PRIMARY KEY (id_order, id_product),
   FOREIGN KEY (id_order) REFERENCES Pedido(id_order) ON DELETE CASCADE,
   FOREIGN KEY (id_product) REFERENCES Producto(id_product) ON DELETE RESTRICT
 );
@@ -77,6 +79,9 @@ CREATE TABLE Venta (
   FOREIGN KEY (id_order) REFERENCES Pedido(id_order) ON DELETE CASCADE
 );
 
+-- ============================
+-- TABLA INVENTARIO
+-- ============================
 CREATE TABLE Inventario (
   id_stock     INT AUTO_INCREMENT PRIMARY KEY,
   id_product   INT NOT NULL,
@@ -90,11 +95,12 @@ CREATE TABLE Inventario (
 -- ============================
 CREATE TABLE Reporte (
   id_report INT AUTO_INCREMENT PRIMARY KEY,
-  report_type ENUM('Ventas','Pedidos','Clientes','Productos') NOT NULL,
-  start_date DATE NOT NULL,
-  end_date DATE NOT NULL,
+  report_type ENUM('VENTAS','PEDIDOS','CLIENTES','PRODUCTOS') NOT NULL,
+  start_date TIMESTAMP NOT NULL,
+  end_date TIMESTAMP NOT NULL,
   report_data JSON,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- ============================
