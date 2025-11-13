@@ -1,6 +1,6 @@
--- ============================
+-- =====================================================
 -- TABLA USUARIO
--- ============================
+-- =====================================================
 CREATE TABLE Usuario (
   id_user INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(50) NOT NULL UNIQUE,
@@ -13,9 +13,9 @@ CREATE TABLE Usuario (
   CHECK (phone_number REGEXP '^\\+[0-9]{7,15}$')
 );
 
--- ============================
+-- =====================================================
 -- TABLA PROVEEDOR
--- ============================
+-- =====================================================
 CREATE TABLE Proveedor (
   id_supplier INT AUTO_INCREMENT PRIMARY KEY,
   supplier_name VARCHAR(100) NOT NULL UNIQUE,
@@ -24,9 +24,9 @@ CREATE TABLE Proveedor (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================
+-- =====================================================
 -- TABLA PRODUCTO
--- ============================
+-- =====================================================
 CREATE TABLE Producto (
   id_product INT AUTO_INCREMENT PRIMARY KEY,
   product_name VARCHAR(100) NOT NULL UNIQUE,
@@ -39,9 +39,9 @@ CREATE TABLE Producto (
   FOREIGN KEY (id_supplier) REFERENCES Proveedor(id_supplier) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
--- ============================
+-- =====================================================
 -- TABLA PEDIDO (Cabecera)
--- ============================
+-- =====================================================
 CREATE TABLE Pedido (
   id_order INT AUTO_INCREMENT PRIMARY KEY,
   order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -53,9 +53,9 @@ CREATE TABLE Pedido (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- ============================
+-- =====================================================
 -- TABLA DETALLE_PEDIDO
--- ============================
+-- =====================================================
 CREATE TABLE DetallePedido (
   id_order_detail INT AUTO_INCREMENT PRIMARY KEY,
   id_order INT,
@@ -66,9 +66,9 @@ CREATE TABLE DetallePedido (
   FOREIGN KEY (id_product) REFERENCES Producto(id_product) ON DELETE RESTRICT
 );
 
--- ============================
+-- =====================================================
 -- TABLA VENTA
--- ============================
+-- =====================================================
 CREATE TABLE Venta (
   id_sale INT AUTO_INCREMENT PRIMARY KEY,
   sale_type ENUM('EFECTIVO','TARJETA') NOT NULL,
@@ -79,9 +79,9 @@ CREATE TABLE Venta (
   FOREIGN KEY (id_order) REFERENCES Pedido(id_order) ON DELETE CASCADE
 );
 
--- ============================
+-- =====================================================
 -- TABLA INVENTARIO
--- ============================
+-- =====================================================
 CREATE TABLE Inventario (
   id_stock     INT AUTO_INCREMENT PRIMARY KEY,
   id_product   INT NOT NULL,
@@ -90,9 +90,9 @@ CREATE TABLE Inventario (
   FOREIGN KEY (id_product) REFERENCES Producto(id_product)
 );
 
--- ============================
+-- =====================================================
 -- TABLA REPORTE
--- ============================
+-- =====================================================
 CREATE TABLE Reporte (
   id_report INT AUTO_INCREMENT PRIMARY KEY,
   report_type ENUM('VENTAS','PEDIDOS','CLIENTES','PRODUCTOS') NOT NULL,
@@ -103,9 +103,9 @@ CREATE TABLE Reporte (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- ============================
+-- =====================================================
 -- TABLA PUNTOS
--- ============================
+-- =====================================================
 CREATE TABLE Puntos (
   id_point INT AUTO_INCREMENT PRIMARY KEY,
   id_user INT NOT NULL,
@@ -118,9 +118,9 @@ CREATE TABLE Puntos (
   FOREIGN KEY (id_sale) REFERENCES Venta(id_sale) ON DELETE CASCADE
 );
 
--- ============================
+-- =====================================================
 -- TABLA COMPROBANTE (Boleta / Factura)
--- ============================
+-- =====================================================
 CREATE TABLE Comprobante (
   id_invoice INT AUTO_INCREMENT PRIMARY KEY,
   invoice_type ENUM('Boleta','Factura') NOT NULL,

@@ -81,7 +81,8 @@ const Register: FC = () => {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim(),
-        phone: formData.phone.trim(),
+        // 🔥 Elimina todos los espacios del número (+51 987 654 321 → +51987654321)
+        phone: formData.phone.replace(/\s+/g, ""),
         password,
         confirmPassword,
       };
