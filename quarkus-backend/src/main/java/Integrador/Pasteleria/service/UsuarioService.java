@@ -148,4 +148,21 @@ public class UsuarioService {
     public boolean deleteById(Integer id) {
         return deleteUser(id);
     }
+
+    public Integrador.Pasteleria.dto.UserStatsDTO getUserStats() {
+        long totalUsers = em.createQuery("SELECT COUNT(u) FROM Usuario u", Long.class).getSingleResult();
+
+        Usuario lastUser = em.createQuery("SELECT u FROM Usuario u ORDER BY u.createdAt DESC", Usuario.class)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+
+        String lastUserName = (lastUser != null) ? lastUser.getUsername() : "N/A";
+        String lastUserDate = (lastUser != null && lastUser.getCreatedAt() != null)
+                ? lastUser.getCreatedAt().toString()
+                : "N/A";
+
+        return new Integrador.Pasteleria.dto.UserStatsDTO(totalUsers, lastUserName, lastUserDate);
+    }
 }

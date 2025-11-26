@@ -44,4 +44,16 @@ public class UsuarioResource {
         return ok ? Response.noContent().build()
                 : Response.status(404).build();
     }
+
+    @GET
+    @Path("/stats")
+    public Response getUserStats() {
+        try {
+            return Response.ok(usuarioService.getUserStats()).build();
+        } catch (Exception e) {
+            return Response.serverError()
+                    .entity("Error al obtener estadísticas: " + e.getMessage())
+                    .build();
+        }
+    }
 }

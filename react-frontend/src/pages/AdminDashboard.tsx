@@ -11,6 +11,8 @@ import {
   faFileExcel,
   faWarehouse,
   faDollarSign,
+  faUserPlus,
+  faClock,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface InventoryStats {
@@ -20,9 +22,16 @@ interface InventoryStats {
   valorTotal: number;
 }
 
+interface UserStats {
+  totalUsers: number;
+  lastUser: string;
+  lastUserDate: string;
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<InventoryStats | null>(null);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,12 +40,22 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch("/api/admin/inventario/estadisticas", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [invRes, userRes] = await Promise.all([
+        fetch("/api/admin/inventario/estadisticas", { headers }),
+        fetch("/api/admin/users/stats", { headers }),
+      ]);
+
+      if (invRes.ok) {
+        const data = await invRes.json();
         setStats(data);
+      }
+
+      if (userRes.ok) {
+        const data = await userRes.json();
+        setUserStats(data);
       }
     } catch (err) {
       console.error("Error cargando estadísticas:", err);
@@ -131,41 +150,44 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Sin Stock */}
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
+          {/* Total Usuarios */}
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium">Sin Stock</p>
+                <p className="text-gray-500 text-sm font-medium">
+                  Total Usuarios
+                </p>
                 <p className="text-3xl font-bold text-gray-800 mt-2">
-                  {loading ? "..." : stats?.sinStock || 0}
+                  {loading ? "..." : userStats?.totalUsers || 0}
                 </p>
               </div>
-              <div className="bg-red-100 p-4 rounded-full">
+              <div className="bg-purple-100 p-4 rounded-full">
                 <FontAwesomeIcon
-                  icon={faWarehouse}
-                  className="text-red-500 text-2xl"
+                  icon={faUsers}
+                  className="text-purple-500 text-2xl"
                 />
               </div>
             </div>
           </div>
 
-          {/* Valor Total */}
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+          {/* Último Usuario */}
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-pink-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-500 text-sm font-medium">
-                  Valor Inventario
+                  Último Usuario
                 </p>
-                <p className="text-3xl font-bold text-gray-800 mt-2">
-                  {loading
-                    ? "..."
-                    : `S/ ${stats?.valorTotal?.toFixed(2) || "0.00"}`}
+                <p className="text-xl font-bold text-gray-800 mt-2 truncate max-w-[120px]" title={userStats?.lastUser || ""}>
+                  {loading ? "..." : userStats?.lastUser || "N/A"}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  {loading ? "" : userStats?.lastUserDate ? new Date(userStats.lastUserDate).toLocaleDateString() : ""}
                 </p>
               </div>
-              <div className="bg-green-100 p-4 rounded-full">
+              <div className="bg-pink-100 p-4 rounded-full">
                 <FontAwesomeIcon
-                  icon={faDollarSign}
-                  className="text-green-500 text-2xl"
+                  icon={faUserPlus}
+                  className="text-pink-500 text-2xl"
                 />
               </div>
             </div>

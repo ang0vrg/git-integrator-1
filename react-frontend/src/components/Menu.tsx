@@ -26,11 +26,7 @@ const menuItems: MenuItem[] = [
   { path: "/stores", label: "Tiendas", minRole: "cliente" },
   { path: "/contact", label: "Contacto", minRole: "cliente" },
   { path: "/dashboard", label: "Dashboard", minRole: "trabajador" },
-  {
-    path: "/admin/reports/users",
-    label: "Reportes Admin",
-    minRole: "administrador",
-  }, // ← ruta real
+
   { path: "/worker/reports/users", label: "Reportes", minRole: "trabajador" },
 ];
 

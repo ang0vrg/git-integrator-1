@@ -1,16 +1,26 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-console.log("🔑 ProtectedRoute MONTADO – pathname:", location.pathname);
+
 const ROLE_PATHS: Record<string, string[]> = {
   cliente: ["/account", "/cart", "/pay"],
-  trabajador: ["/account", "/worker"],
-  administrador: ["/account", "/admin"],
+  trabajador: [
+    "/account",
+    "/worker",
+    "/dashboard",
+    "/admin/suppliers",
+    "/admin/inventory",
+    "/admin/import",
+    "/admin/reports",
+  ],
+  administrador: ["/account", "/admin", "/worker", "/dashboard"],
 };
 
 export const ProtectedRoute = () => {
   const { user, role } = useAuth();
   const location = useLocation();
+
+  console.log("🔑 ProtectedRoute MONTADO – pathname:", location.pathname);
 
   /* 1º – aún no sabemos si hay token → no decidimos nada */
   if (user === undefined || role === undefined) {

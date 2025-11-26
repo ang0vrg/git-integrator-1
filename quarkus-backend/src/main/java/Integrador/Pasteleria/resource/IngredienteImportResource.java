@@ -53,18 +53,34 @@ public class IngredienteImportResource {
             // Obtener archivo
             List<InputPart> inputParts = uploadForm.get("file");
             InputPart inputPart = inputParts.get(0);
+            InputStream inputStream = inputPart.getBody(InputStream.class, null);
 
-            try (InputStream inputStream = inputPart.getBody(InputStream.class, null)) {
-                ImportResultDTO result = importService.importFromExcel(inputStream, idProveedor);
+            ImportResultDTO result;
+            String fileName = getFileName(inputPart);
 
-                if (result.getExitoso()) {
-                    Log.info("✅ Importación exitosa: " + result.getIngredientesCreados() +
-                            " creados, " + result.getIngredientesActualizados() + " actualizados");
-                    return Response.ok(result).build();
+            try {
+                if (fileName != null && fileName.toLowerCase().endsWith(".csv")) {
+                    Log.info("📄 Detectado archivo CSV: " + fileName);
+                    result = importService.importFromCsv(inputStream, idProveedor);
                 } else {
-                    Log.warn("⚠️ Importación con errores: " + result.getErrores() + " errores");
-                    return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
+                    Log.info("📊 Detectado archivo Excel: " + fileName);
+                    result = importService.importFromExcel(inputStream, idProveedor);
                 }
+            } finally {
+                // El servicio puede haber cerrado el stream, pero aseguramos
+                try {
+                    inputStream.close();
+                } catch (Exception e) {
+                    /* ignore */ }
+            }
+
+            if (result.getExitoso()) {
+                Log.info("✅ Importación exitosa: " + result.getIngredientesCreados() +
+                        " creados, " + result.getIngredientesActualizados() + " actualizados");
+                return Response.ok(result).build();
+            } else {
+                Log.warn("⚠️ Importación con errores: " + result.getErrores() + " errores");
+                return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
             }
 
         } catch (Exception e) {
@@ -73,6 +89,21 @@ public class IngredienteImportResource {
                     .entity(createErrorResult("Error procesando archivo: " + e.getMessage()))
                     .build();
         }
+    }
+
+    private String getFileName(InputPart part) {
+        try {
+            String[] contentDisposition = part.getHeaders().getFirst("Content-Disposition").split(";");
+            for (String filename : contentDisposition) {
+                if ((filename.trim().startsWith("filename"))) {
+                    String[] name = filename.split("=");
+                    return name[1].trim().replaceAll("\"", "");
+                }
+            }
+        } catch (Exception e) {
+            Log.warn("No se pudo obtener el nombre del archivo", e);
+        }
+        return "unknown";
     }
 
     private ImportResultDTO createErrorResult(String mensaje) {

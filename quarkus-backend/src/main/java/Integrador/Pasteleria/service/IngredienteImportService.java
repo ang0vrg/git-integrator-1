@@ -126,6 +126,117 @@ public class IngredienteImportService {
         return result;
     }
 
+    @Transactional
+    public ImportResultDTO importFromCsv(InputStream inputStream, Integer idProveedor) {
+        ImportResultDTO result = new ImportResultDTO();
+        result.setTotalFilas(0);
+        result.setIngredientesCreados(0);
+        result.setIngredientesActualizados(0);
+        result.setPreciosCreados(0);
+        result.setErrores(0);
+        result.setMensajesError(new ArrayList<>());
+
+        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream))) {
+            // Buscar proveedor
+            Proveedor proveedor = em.find(Proveedor.class, idProveedor);
+            if (proveedor == null) {
+                result.setExitoso(false);
+                result.getMensajesError().add("Proveedor no encontrado con ID: " + idProveedor);
+                return result;
+            }
+
+            String line;
+            int rowNum = 0;
+            while ((line = br.readLine()) != null) {
+                // Saltar header
+                if (rowNum == 0) {
+                    rowNum++;
+                    continue;
+                }
+
+                try {
+                    result.setTotalFilas(result.getTotalFilas() + 1);
+                    String[] values = line.split(",");
+
+                    // Validar longitud mínima (al menos hasta unidad)
+                    if (values.length < 3) {
+                        result.setErrores(result.getErrores() + 1);
+                        result.getMensajesError().add("Fila " + (rowNum + 1) + ": Formato inválido");
+                        rowNum++;
+                        continue;
+                    }
+
+                    // Leer datos
+                    String codigo = values[0].trim();
+                    String nombre = values[1].trim();
+                    String unidad = values[2].trim();
+
+                    BigDecimal precioMinorista = parseDecimal(values.length > 3 ? values[3] : null);
+                    BigDecimal precioMayorista = parseDecimal(values.length > 4 ? values[4] : null);
+                    BigDecimal precioDistribuidor = parseDecimal(values.length > 5 ? values[5] : null);
+                    BigDecimal stockInicial = parseDecimal(values.length > 6 ? values[6] : null);
+
+                    // Validar datos obligatorios
+                    if (nombre.isEmpty()) {
+                        result.setErrores(result.getErrores() + 1);
+                        result.getMensajesError().add("Fila " + (rowNum + 1) + ": Nombre es obligatorio");
+                        rowNum++;
+                        continue;
+                    }
+
+                    if (unidad.isEmpty()) {
+                        result.setErrores(result.getErrores() + 1);
+                        result.getMensajesError().add("Fila " + (rowNum + 1) + ": Unidad es obligatoria");
+                        rowNum++;
+                        continue;
+                    }
+
+                    // Buscar o crear ingrediente
+                    Ingrediente ingrediente = findOrCreateIngrediente(codigo, nombre, unidad, stockInicial, result);
+
+                    // Crear precios
+                    if (precioMinorista != null && precioMinorista.compareTo(BigDecimal.ZERO) > 0) {
+                        createOrUpdatePrecio(proveedor, ingrediente,
+                                PrecioProveedorIngrediente.TipoCliente.minorista, precioMinorista, result);
+                    }
+                    if (precioMayorista != null && precioMayorista.compareTo(BigDecimal.ZERO) > 0) {
+                        createOrUpdatePrecio(proveedor, ingrediente,
+                                PrecioProveedorIngrediente.TipoCliente.mayorista, precioMayorista, result);
+                    }
+                    if (precioDistribuidor != null && precioDistribuidor.compareTo(BigDecimal.ZERO) > 0) {
+                        createOrUpdatePrecio(proveedor, ingrediente,
+                                PrecioProveedorIngrediente.TipoCliente.distribuidor, precioDistribuidor, result);
+                    }
+
+                } catch (Exception e) {
+                    result.setErrores(result.getErrores() + 1);
+                    result.getMensajesError().add("Fila " + (rowNum + 1) + ": " + e.getMessage());
+                    Log.error("Error procesando fila CSV " + (rowNum + 1), e);
+                }
+                rowNum++;
+            }
+
+            result.setExitoso(result.getErrores() == 0);
+
+        } catch (Exception e) {
+            result.setExitoso(false);
+            result.getMensajesError().add("Error general CSV: " + e.getMessage());
+            Log.error("Error importando CSV", e);
+        }
+
+        return result;
+    }
+
+    private BigDecimal parseDecimal(String value) {
+        if (value == null || value.trim().isEmpty())
+            return null;
+        try {
+            return new BigDecimal(value.trim());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private Ingrediente findOrCreateIngrediente(String codigo, String nombre, String unidad,
             BigDecimal stockInicial, ImportResultDTO result) {
         Ingrediente ingrediente = null;

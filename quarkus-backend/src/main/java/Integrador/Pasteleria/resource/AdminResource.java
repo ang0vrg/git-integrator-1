@@ -9,6 +9,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+
 @Path("/api/admin")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -51,4 +52,5 @@ public class AdminResource {
         System.out.println("📦 Usuarios a exportar: " + list.size() + " registros");
         return exportService.exportExcel(list);
     }
+
 }
