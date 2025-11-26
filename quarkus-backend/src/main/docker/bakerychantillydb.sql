@@ -25,18 +25,72 @@ CREATE TABLE Proveedor (
 );
 
 -- =====================================================
--- TABLA PRODUCTO
+-- TABLA INGREDIENTE
 -- =====================================================
-CREATE TABLE Producto (
-  id_product INT AUTO_INCREMENT PRIMARY KEY,
-  product_name VARCHAR(100) NOT NULL UNIQUE,
-  product_description VARCHAR(255) NOT NULL,
-  product_quantity INT NOT NULL,
-  product_price DECIMAL(10,2) NOT NULL,
-  id_supplier INT,
-  added_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (id_supplier) REFERENCES Proveedor(id_supplier) ON DELETE SET NULL ON UPDATE CASCADE
+CREATE TABLE Ingrediente (
+  id_ingrediente INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL UNIQUE,
+  unidad_medida VARCHAR(20) NOT NULL,
+  stock_actual DECIMAL(10,2) DEFAULT 0,
+  costo_promedio DECIMAL(10,2) DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =====================================================
+-- TABLA COMPRA
+-- =====================================================
+CREATE TABLE Compra (
+  id_compra INT AUTO_INCREMENT PRIMARY KEY,
+  fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  id_proveedor INT NOT NULL,
+  total DECIMAL(10,2),
+  FOREIGN KEY (id_proveedor) REFERENCES Proveedor(id_supplier)
+);
+
+-- =====================================================
+-- TABLA DETALLE COMPRA
+-- =====================================================
+CREATE TABLE CompraDetalle (
+  id_detalle INT AUTO_INCREMENT PRIMARY KEY,
+  id_compra INT NOT NULL,
+  id_ingrediente INT NOT NULL,
+  cantidad DECIMAL(10,2) NOT NULL,
+  precio_unitario DECIMAL(10,2) NOT NULL,
+  subtotal DECIMAL(10,2) GENERATED ALWAYS AS (cantidad * precio_unitario) STORED,
+  FOREIGN KEY (id_compra) REFERENCES Compra(id_compra) ON DELETE CASCADE,
+  FOREIGN KEY (id_ingrediente) REFERENCES Ingrediente(id_ingrediente)
+);
+
+-- =====================================================
+-- TABLA RECETA
+-- =====================================================
+CREATE TABLE Receta (
+  id_receta INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL UNIQUE,
+  descripcion VARCHAR(255)
+);
+
+-- =====================================================
+-- TABLA RECETA
+-- =====================================================
+CREATE TABLE RecetaDetalle (
+  id_detalle INT AUTO_INCREMENT PRIMARY KEY,
+  id_receta INT NOT NULL,
+  id_ingrediente INT NOT NULL,
+  cantidad DECIMAL(10,2) NOT NULL,
+  FOREIGN KEY (id_receta) REFERENCES Receta(id_receta),
+  FOREIGN KEY (id_ingrediente) REFERENCES Ingrediente(id_ingrediente)
+);
+
+-- =====================================================
+-- TABLA PRODUCTO FINAL
+-- =====================================================
+CREATE TABLE ProductoFinal (
+  id_producto INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL UNIQUE,
+  precio_venta DECIMAL(10,2) NOT NULL,
+  id_receta INT NOT NULL,
+  FOREIGN KEY (id_receta) REFERENCES Receta(id_receta)
 );
 
 -- =====================================================
@@ -59,11 +113,11 @@ CREATE TABLE Pedido (
 CREATE TABLE DetallePedido (
   id_order_detail INT AUTO_INCREMENT PRIMARY KEY,
   id_order INT,
-  id_product INT,
+  id_producto_final INT,
   quantity INT NOT NULL,
   price DECIMAL(10,2) NOT NULL,
   FOREIGN KEY (id_order) REFERENCES Pedido(id_order) ON DELETE CASCADE,
-  FOREIGN KEY (id_product) REFERENCES Producto(id_product) ON DELETE RESTRICT
+  FOREIGN KEY (id_producto_final) REFERENCES ProductoFinal(id_producto_final) ON DELETE RESTRICT
 );
 
 -- =====================================================
@@ -77,17 +131,6 @@ CREATE TABLE Venta (
   sale_subtotal DECIMAL(10,2) NOT NULL,
   id_order INT NOT NULL,
   FOREIGN KEY (id_order) REFERENCES Pedido(id_order) ON DELETE CASCADE
-);
-
--- =====================================================
--- TABLA INVENTARIO
--- =====================================================
-CREATE TABLE Inventario (
-  id_stock     INT AUTO_INCREMENT PRIMARY KEY,
-  id_product   INT NOT NULL,
-  quantity     INT NOT NULL,
-  last_update  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (id_product) REFERENCES Producto(id_product)
 );
 
 -- =====================================================

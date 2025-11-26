@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import org.mindrot.jbcrypt.BCrypt;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class UsuarioService {
@@ -19,6 +20,20 @@ public class UsuarioService {
     public Optional<Usuario> findByUserEmail(String userEmail) {
         return em.createQuery("SELECT u FROM Usuario u WHERE u.userEmail = :email", Usuario.class)
                 .setParameter("email", userEmail)
+                .getResultStream()
+                .findFirst();
+    }
+
+    public Optional<Usuario> findByPhoneNumber(String phoneNumber) {
+        return em.createQuery("SELECT u FROM Usuario u WHERE u.phoneNumber = :phone", Usuario.class)
+                .setParameter("phone", phoneNumber)
+                .getResultStream()
+                .findFirst();
+    }
+
+    public Optional<Usuario> findByUsername(String username) {
+        return em.createQuery("SELECT u FROM Usuario u WHERE u.username = :username", Usuario.class)
+                .setParameter("username", username)
                 .getResultStream()
                 .findFirst();
     }
@@ -53,7 +68,10 @@ public class UsuarioService {
     public boolean deleteUser(Integer userId) {
         Usuario usuario = em.find(Usuario.class, userId);
         if (usuario != null) {
-            em.remove(usuario);
+            // Soft delete
+            usuario.setActive(false);
+            usuario.setDeletedAt(java.time.LocalDateTime.now());
+            em.merge(usuario);
             return true;
         }
         return false;
@@ -75,32 +93,59 @@ public class UsuarioService {
     }
 
     public List<UsuarioDTO> listUsers(String role) {
+        List<Usuario> users;
         if (role == null || role.isBlank()) {
-            // ← Sin WHERE → devuelve TODOS
-            return em.createQuery(
-                    "SELECT new Integrador.Pasteleria.dto.UsuarioDTO(" +
-                            "u.id, u.username, u.userEmail, CAST(u.userRole AS string), u.phoneNumber, u.createdAt) " +
-                            "FROM Usuario u " +
-                            "ORDER BY u.createdAt DESC",
-                    UsuarioDTO.class)
+            users = em.createQuery("SELECT u FROM Usuario u ORDER BY u.createdAt DESC", Usuario.class)
+                    .getResultList();
+        } else {
+            users = em
+                    .createQuery("SELECT u FROM Usuario u WHERE u.userRole = :role ORDER BY u.createdAt DESC",
+                            Usuario.class)
+                    .setParameter("role", Usuario.Role.valueOf(role))
                     .getResultList();
         }
-        // ← Con WHERE → filtra por rol
-        return em.createQuery(
-                "SELECT new Integrador.Pasteleria.dto.UsuarioDTO(" +
-                        "u.id, u.username, u.userEmail, CAST(u.userRole AS string), u.phoneNumber, u.createdAt) " +
-                        "FROM Usuario u " +
-                        "WHERE u.userRole = :role " +
-                        "ORDER BY u.createdAt DESC",
-                UsuarioDTO.class)
-                .setParameter("role", role)
-                .getResultList();
+        return users.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    private UsuarioDTO convertToDTO(Usuario u) {
+        UsuarioDTO dto = new UsuarioDTO();
+        dto.setIdUser(u.getIdUser());
+        dto.setUsername(u.getUsername());
+        dto.setUserEmail(u.getUserEmail());
+        dto.setUserRole(u.getUserRole().name());
+        dto.setPhoneNumber(u.getPhoneNumber());
+        dto.setLastAccess(u.getLastAccess());
+        dto.setActive(u.getActive());
+        dto.setCreatedAt(u.getCreatedAt());
+        return dto;
+    }
+
+    @Transactional
+    public UsuarioDTO update(Integer id, UsuarioDTO dto) {
+        Usuario usuario = em.find(Usuario.class, id);
+        if (usuario != null) {
+            updateEntityFromDTO(usuario, dto);
+            em.merge(usuario);
+            return convertToDTO(usuario);
+        }
+        return null;
+    }
+
+    private void updateEntityFromDTO(Usuario entity, UsuarioDTO dto) {
+        if (dto.getUsername() != null)
+            entity.setUsername(dto.getUsername());
+        if (dto.getUserEmail() != null)
+            entity.setUserEmail(dto.getUserEmail());
+        if (dto.getPhoneNumber() != null)
+            entity.setPhoneNumber(dto.getPhoneNumber());
+        if (dto.getUserRole() != null)
+            entity.setUserRole(Usuario.Role.valueOf(dto.getUserRole()));
+        if (dto.getActive() != null)
+            entity.setActive(dto.getActive());
     }
 
     @Transactional
     public boolean deleteById(Integer id) {
-        return em.createQuery("DELETE FROM Usuario u WHERE u.idUser = :id")
-                .setParameter("id", id)
-                .executeUpdate() > 0;
+        return deleteUser(id);
     }
 }

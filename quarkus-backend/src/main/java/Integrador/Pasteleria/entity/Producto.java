@@ -5,39 +5,93 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "Producto")
+@Table(name = "ProductoFinal")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_product")
+    @Column(name = "id_producto")
     private Integer idProduct;
 
-    @Column(name = "product_name", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "id_receta", nullable = false)
+    private Receta receta;
+
+    @Column(name = "codigo_sku", unique = true)
+    private String sku;
+
+    @Column(name = "nombre", nullable = false, unique = true)
     private String productName;
 
-    @Column(name = "product_description", nullable = false)
+    @Column(name = "descripcion")
     private String productDescription;
 
-    @Column(name = "product_quantity", nullable = false)
-    private Integer productQuantity;
-    
-    @Column(name = "product_price", nullable = false)
-    private Double productPrice;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "categoria")
+    private Categoria categoria = Categoria.torta;
 
-    @ManyToOne
-    @JoinColumn(name = "id_supplier", nullable = false)
-    private Proveedor supplier;
+    @Column(name = "costo_produccion")
+    private BigDecimal costoProduccion = BigDecimal.ZERO;
 
-    @Column(name = "added_on", updatable = false)
+    @Column(name = "margen_ganancia_porcentaje")
+    private BigDecimal margenGanancia = new BigDecimal("30.00");
+
+    @Column(name = "precio_venta", nullable = false)
+    private BigDecimal productPrice;
+
+    @Column(name = "peso_gramos")
+    private Integer pesoGramos;
+
+    @Column(name = "porciones")
+    private Integer porciones;
+
+    @Column(name = "requiere_refrigeracion")
+    private Boolean requiereRefrigeracion = false;
+
+    @Column(name = "dias_vida_util")
+    private Integer diasVidaUtil;
+
+    @Column(name = "disponible_catalogo")
+    private Boolean disponibleCatalogo = true;
+
+    @Column(name = "requiere_pedido_anticipado")
+    private Boolean requierePedidoAnticipado = false;
+
+    @Column(name = "dias_anticipacion")
+    private Integer diasAnticipacion = 0;
+
+    @Column(name = "stock_disponible")
+    private Integer stockDisponible = 0;
+
+    @Column(name = "imagen_url")
+    private String productImage;
+
+    @Column(name = "etiquetas")
+    private String etiquetas;
+
+    @Column(name = "orden_visualizacion")
+    private Integer ordenVisualizacion = 999;
+
+    @Column(name = "destacado")
+    private Boolean destacado = false;
+
+    @Column(name = "activo")
+    private Boolean active = true;
+
+    @Column(name = "fecha_creacion", updatable = false)
     private LocalDateTime addedOn;
 
-    @Column(name = "updated_on")
+    @Column(name = "fecha_actualizacion")
     private LocalDateTime updatedOn;
+
+    public enum Categoria {
+        torta, cupcake, galleta, pan, postre, otro
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -49,54 +103,4 @@ public class Producto {
     protected void onUpdate() {
         updatedOn = LocalDateTime.now();
     }
-
-    public enum ProductType {
-        PASTEL,
-        TORTA,
-        GALLETAS,
-        CHOCOLATES,
-        GOMA,
-        BEBIDAS,
-        OTROS
-    }
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "product_type", nullable = false)
-    private ProductType productType;
-
-    @Column(name = "product_image", nullable = false)
-    private String productImage;
-
-    @Column(name = "product_status", nullable = false)
-    private String productStatus;
-
-    @Column(name = "product_category", nullable = false)
-    private String productCategory;
-
-    @Column(name = "product_tags", nullable = false)
-    private String productTags;
-
-    @Column(name = "product_ingredients", nullable = false)
-    private String productIngredients;
-
-    @Column(name = "product_instructions", nullable = false)
-    private String productInstructions;
-
-    @Column(name = "product_nutritional_info", nullable = false)
-    private String productNutritionalInfo;
-
-    @Column(name = "product_allergens", nullable = false)
-    private String productAllergens;
-
-    @Column(name = "product_related_products", nullable = false)
-    private String productRelatedProducts;
-
-    @Column(name = "product_related_recipes", nullable = false)
-    private String productRelatedRecipes;
-
-    @Column(name = "product_related_tips", nullable = false)
-    private String productRelatedTips;
-
-    @Column(name = "product_related_faqs", nullable = false)
-    private String productRelatedFAQs;
 }

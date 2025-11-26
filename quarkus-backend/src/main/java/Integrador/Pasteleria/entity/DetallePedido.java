@@ -5,45 +5,44 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "DetallePedido")
+@Table(name = "PedidoDetalle")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class DetallePedido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_order_detail")
+    @Column(name = "id_detalle")
     private Integer idOrderDetail;
-    
+
     @ManyToOne
-    @JoinColumn(name = "id_order", nullable = false)
+    @JoinColumn(name = "id_pedido", nullable = false)
     private Pedido order;
 
     @ManyToOne
-    @JoinColumn(name = "id_product", nullable = false)
+    @JoinColumn(name = "id_producto", nullable = false)
     private Producto product;
 
-    @Column(name = "quantity", nullable = false)
+    @Column(name = "cantidad", nullable = false)
     private Integer quantity;
 
-    @Column(name = "price", nullable = false)
-    private Double price;
+    @Column(name = "precio_unitario", nullable = false)
+    private BigDecimal price;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "subtotal", insertable = false, updatable = false)
+    private BigDecimal subtotal;
+
+    @Column(name = "personalizacion")
+    private String personalizacion;
+
+    @Column(name = "fecha_creacion", updatable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
     }
 }

@@ -125,9 +125,9 @@ export default function UsersReport() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {users.map((u) => (
-                  <tr key={u.id} className="hover:bg-gray-50">
+                  <tr key={u.idUser} className="hover:bg-gray-50">
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                      {u.id}
+                      {u.idUser}
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                       {u.username}
@@ -144,7 +144,7 @@ export default function UsersReport() {
                     {isAdmin && (
                       <td className="p-2 text-center">
                         <button
-                          onClick={() => openDeleteModal(u.id!)}
+                          onClick={() => openDeleteModal(u.idUser!)}
                           className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
                         >
                           Eliminar

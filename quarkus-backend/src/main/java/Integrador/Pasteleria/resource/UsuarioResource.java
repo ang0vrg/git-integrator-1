@@ -14,22 +14,17 @@ import java.util.Map;
 @Path("/api/admin/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RolesAllowed({ "administrador", "trabajador" }) // ambos pueden LEER
+@RolesAllowed({ "administrador", "trabajador" })
 public class UsuarioResource {
 
     @Inject
     UsuarioService usuarioService;
 
-    /* ---------- LISTADO (filtro opcional) ---------- */
     @GET
     public List<UsuarioDTO> list(@QueryParam("role") String role) {
-        if (role == null || role.isBlank()) {
-            return usuarioService.listUsers(null); // ← sin WHERE
-        }
         return usuarioService.listUsers(role);
     }
 
-    /* ---------- CAMBIAR ROL (solo admin) ---------- */
     @PATCH
     @Path("{id}/role")
     @RolesAllowed("administrador")
@@ -41,7 +36,6 @@ public class UsuarioResource {
                 : Response.status(404).build();
     }
 
-    /* ---------- ELIMINAR (solo admin) ---------- */
     @DELETE
     @Path("{id}")
     @RolesAllowed("administrador")

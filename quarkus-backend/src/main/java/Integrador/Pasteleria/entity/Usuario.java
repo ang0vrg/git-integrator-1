@@ -15,30 +15,51 @@ public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_user")
+    @Column(name = "id_usuario")
     private Integer idUser;
 
-    @Column(name = "username", nullable = false, unique = true)
+    @Column(name = "nombre_usuario", nullable = false, unique = true)
     private String username;
 
-    @Column(name = "user_email", nullable = false, unique = true)
+    @Column(name = "correo", nullable = false, unique = true)
     private String userEmail;
 
-    @Column(name = "user_password", nullable = false)
+    @Column(name = "contrasena", nullable = false)
     private String userPassword;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_role", nullable = false)
+    @Column(name = "rol", nullable = false)
     private Role userRole = Role.cliente;
 
-    @Column(name = "phone_number", unique = true)
+    @Column(name = "telefono", unique = true)
     private String phoneNumber;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "ultimo_acceso")
+    private LocalDateTime lastAccess;
+
+    @Column(name = "intentos_fallidos")
+    private Integer failedAttempts = 0;
+
+    @Column(name = "cuenta_bloqueada")
+    private Boolean accountLocked = false;
+
+    @Column(name = "token_recuperacion")
+    private String recoveryToken;
+
+    @Column(name = "token_expiracion")
+    private LocalDateTime tokenExpiration;
+
+    @Column(name = "fecha_creacion", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "fecha_actualizacion")
     private LocalDateTime updatedAt;
+
+    @Column(name = "fecha_eliminacion")
+    private LocalDateTime deletedAt;
+
+    @Column(name = "activo")
+    private Boolean active = true;
 
     public enum Role {
         cliente,

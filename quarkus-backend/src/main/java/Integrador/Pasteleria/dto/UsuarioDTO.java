@@ -1,15 +1,26 @@
 package Integrador.Pasteleria.dto;
-public class UsuarioDTO {
-    public Integer id;
-    public String username;
-    public String userEmail;
-    public String userRole; // ← String, NO Usuario.Role
-    public String phoneNumber;
-    public java.time.LocalDateTime createdAt;
 
-    public UsuarioDTO(Integer id, String username, String userEmail, String userRole, String phoneNumber,
-            java.time.LocalDateTime createdAt) {
-        this.id = id;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import java.time.LocalDateTime;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class UsuarioDTO {
+    private Integer idUser;
+    private String username;
+    private String userEmail;
+    private String userRole;
+    private String phoneNumber;
+    private LocalDateTime lastAccess;
+    private Boolean active;
+    private LocalDateTime createdAt;
+
+    public UsuarioDTO(Integer idUser, String username, String userEmail, String userRole, String phoneNumber,
+            LocalDateTime createdAt) {
+        this.idUser = idUser;
         this.username = username;
         this.userEmail = userEmail;
         this.userRole = userRole;

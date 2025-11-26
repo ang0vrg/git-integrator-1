@@ -47,7 +47,7 @@ public class PublicResource {
         }
         return em.createQuery(
                 "SELECT new Integrador.Pasteleria.dto.UsuarioDTO(" +
-                        "u.id, u.username, u.userEmail, CAST(u.userRole AS string), u.phoneNumber, u.createdAt) " +
+                        "u.idUser, u.username, u.userEmail, CAST(u.userRole AS string), u.phoneNumber, u.createdAt) " +
                         "FROM Usuario u " +
                         "WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%')) " +
                         "   OR LOWER(u.userEmail) LIKE LOWER(CONCAT('%', :q, '%')) " +

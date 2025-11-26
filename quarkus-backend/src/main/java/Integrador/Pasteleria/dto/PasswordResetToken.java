@@ -3,7 +3,7 @@ package Integrador.Pasteleria.dto;
 
 import java.time.Instant;
 
-    public class PasswordResetToken {
+public class PasswordResetToken {
     public final String email;
     public final String token;
     public final Instant expiryDate;

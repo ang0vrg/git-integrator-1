@@ -1,6 +1,7 @@
-// quarkus-backend\src\main\java\Integrador\Pasteleria\resource\ClienteResource.java
 package Integrador.Pasteleria.resource;
 
+import Integrador.Pasteleria.dto.UsuarioDTO;
+import Integrador.Pasteleria.service.UsuarioService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -20,19 +21,33 @@ public class ClienteResource {
     @Inject
     JsonWebToken jwt;
 
+    @Inject
+    UsuarioService usuarioService;
+
     /**
      * Accesible por TODOS los roles autenticados
-     * Obtiene el perfil del usuario actual
+     * Obtiene el perfil del usuario actual desde la base de datos
      */
     @GET
     @Path("/profile")
-    @RolesAllowed({"cliente", "trabajador", "administrador"})
+    @RolesAllowed({ "cliente", "trabajador", "administrador" })
     public Response getProfile(@Context SecurityContext securityContext) {
-        Map<String, Object> profile = new HashMap<>();
-        profile.put("email", jwt.getName());
-        profile.put("roles", jwt.getGroups());
-        
-        return Response.ok(profile).build();
+        String email = jwt.getName();
+
+        return usuarioService.findByUserEmail(email)
+                .map(usuario -> {
+                    UsuarioDTO dto = new UsuarioDTO();
+                    dto.setIdUser(usuario.getIdUser());
+                    dto.setUsername(usuario.getUsername());
+                    dto.setUserEmail(usuario.getUserEmail());
+                    dto.setUserRole(usuario.getUserRole().name());
+                    dto.setPhoneNumber(usuario.getPhoneNumber());
+                    dto.setCreatedAt(usuario.getCreatedAt());
+                    dto.setLastAccess(usuario.getLastAccess());
+                    dto.setActive(usuario.getActive());
+                    return Response.ok(dto).build();
+                })
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     /**
@@ -41,13 +56,13 @@ public class ClienteResource {
      */
     @POST
     @Path("/orders")
-    @RolesAllowed({"cliente", "trabajador", "administrador"})
+    @RolesAllowed({ "cliente", "trabajador", "administrador" })
     public Response createOrder(Map<String, Object> orderData) {
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Pedido creado exitosamente");
         response.put("userEmail", jwt.getName());
         response.put("orderData", orderData);
-        
+
         return Response.status(Response.Status.CREATED).entity(response).build();
     }
 
@@ -57,12 +72,12 @@ public class ClienteResource {
      */
     @GET
     @Path("/orders")
-    @RolesAllowed({"cliente", "trabajador", "administrador"})
+    @RolesAllowed({ "cliente", "trabajador", "administrador" })
     public Response getMyOrders() {
         Map<String, Object> response = new HashMap<>();
         response.put("userEmail", jwt.getName());
         response.put("orders", "[]"); // Por ahora vacío
-        
+
         return Response.ok(response).build();
     }
 }

@@ -20,6 +20,10 @@ import Stores from "./pages/Stores";
 import Contact from "./pages/Contact";
 import UsersReport from "./pages/UsersReport";
 import CartPage from "./pages/CartPage";
+import AdminDashboard from "./pages/AdminDashboard";
+import SuppliersManagement from "./pages/SuppliersManagement";
+import InventoryManagement from "./pages/InventoryManagement";
+import ImportIngredients from "./pages/ImportIngredients";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App(): React.ReactElement {
@@ -55,6 +59,10 @@ function App(): React.ReactElement {
 
           {/* ámbito admin */}
           <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/suppliers" element={<SuppliersManagement />} />
+            <Route path="/admin/inventory" element={<InventoryManagement />} />
+            <Route path="/admin/import" element={<ImportIngredients />} />
             <Route path="/admin/reports/users" element={<UsersReport />} />
           </Route>
 
