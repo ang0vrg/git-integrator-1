@@ -53,6 +53,15 @@ public class Ingrediente {
     @Column(name = "ultimo_costo")
     private BigDecimal ultimoCosto = BigDecimal.ZERO;
 
+    @Column(name = "precio_minorista")
+    private BigDecimal precioMinorista = BigDecimal.ZERO;
+
+    @Column(name = "precio_mayorista")
+    private BigDecimal precioMayorista = BigDecimal.ZERO;
+
+    @Column(name = "precio_distribuidor")
+    private BigDecimal precioDistribuidor = BigDecimal.ZERO;
+
     @Column(name = "requiere_refrigeracion")
     private Boolean requiereRefrigeracion = false;
 

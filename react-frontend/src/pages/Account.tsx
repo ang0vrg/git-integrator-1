@@ -24,6 +24,7 @@ interface UserProfile {
   createdAt: string;
   lastAccess: string | null;
   active: boolean;
+  fotoPerfil?: string;
 }
 
 const Account: React.FC = () => {
@@ -31,6 +32,8 @@ const Account: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -70,6 +73,46 @@ const Account: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(selectedFile);
+    reader.onload = async () => {
+      const base64Image = reader.result as string;
+      
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("/api/cliente/profile/image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ image: base64Image }),
+        });
+
+        if (response.ok) {
+          alert("Imagen actualizada correctamente");
+          // Refresh profile
+          setProfile(prev => prev ? { ...prev, fotoPerfil: base64Image } : null);
+          setSelectedFile(null);
+        } else {
+          alert("Error al actualizar la imagen");
+        }
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Error de conexión");
+      }
+    };
   };
 
   const formatDate = (dateString: string | null) => {
@@ -140,14 +183,39 @@ const Account: React.FC = () => {
 
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-gray-200 mb-6">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-rose-500 to-rose-700 flex items-center justify-center text-white text-4xl font-bold shadow-lg">
-              {profile.username.charAt(0).toUpperCase()}
+            <div className="relative group">
+              <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-rose-100 shadow-lg">
+                {profile.fotoPerfil ? (
+                  <img src={profile.fotoPerfil} alt="Perfil" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-rose-500 to-rose-700 flex items-center justify-center text-white text-5xl font-bold">
+                    {profile.username.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <label className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md cursor-pointer hover:bg-gray-50 transition">
+                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                <FontAwesomeIcon icon={faUserCircle} className="text-rose-600 text-xl" />
+              </label>
             </div>
-            <div className="text-center sm:text-left">
+            
+            <div className="text-center sm:text-left flex-1">
               <p className="text-2xl font-semibold text-gray-800">
                 ¡Hola, {profile.username}!
               </p>
-              <p className="text-gray-600">¡Bienvenido de vuelta!</p>
+              <p className="text-gray-600 mb-4">¡Bienvenido de vuelta!</p>
+              
+              {selectedFile && (
+                <div className="animate-fadeIn">
+                  <p className="text-sm text-gray-500 mb-2">Imagen seleccionada: {selectedFile.name}</p>
+                  <button 
+                    onClick={handleUpload}
+                    className="bg-rose-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-rose-700 transition"
+                  >
+                    Guardar Imagen
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

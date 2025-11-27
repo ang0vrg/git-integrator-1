@@ -17,6 +17,9 @@ public class IngredienteDTO {
     private BigDecimal puntoReorden;
     private BigDecimal costoPromedio;
     private BigDecimal ultimoCosto;
+    private BigDecimal precioMinorista;
+    private BigDecimal precioMayorista;
+    private BigDecimal precioDistribuidor;
     private Boolean requiereRefrigeracion;
     private Integer diasVidaUtil;
     private Boolean alergeno;

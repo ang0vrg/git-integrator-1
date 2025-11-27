@@ -221,6 +221,13 @@ export default function InventoryManagement() {
             <FontAwesomeIcon icon={faPlus} />
             Nuevo Ingrediente
           </button>
+          <button
+            onClick={() => window.location.href = "/admin/inventory/import"}
+            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-lg ml-4"
+          >
+            <FontAwesomeIcon icon={faPlus} />
+            Importar
+          </button>
         </div>
 
         {/* Filters */}
@@ -291,6 +298,15 @@ export default function InventoryManagement() {
                       Costo
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      P. Minorista
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      P. Mayorista
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      P. Distrib.
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Estado
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -334,6 +350,15 @@ export default function InventoryManagement() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           S/ {ingredient.costoPromedio.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {ingredient.precioMinorista ? `S/ ${ingredient.precioMinorista.toFixed(2)}` : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {ingredient.precioMayorista ? `S/ ${ingredient.precioMayorista.toFixed(2)}` : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {ingredient.precioDistribuidor ? `S/ ${ingredient.precioDistribuidor.toFixed(2)}` : '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span

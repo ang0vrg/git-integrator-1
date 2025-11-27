@@ -13,6 +13,7 @@ import {
   faDollarSign,
   faUserPlus,
   faClock,
+  faUtensils,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface InventoryStats {
@@ -96,6 +97,22 @@ export default function AdminDashboard() {
       color: "bg-purple-500",
       hoverColor: "hover:bg-purple-600",
       path: "/admin/reports/users",
+    },
+    {
+      title: "Crear Receta",
+      description: "Crear nuevas recetas y asignarlas al catálogo",
+      icon: faUtensils,
+      color: "bg-orange-500",
+      hoverColor: "hover:bg-orange-600",
+      path: "/admin/recipes/create",
+    },
+    {
+      title: "Lista de Recetas",
+      description: "Ver todas las recetas y crear productos",
+      icon: faUtensils,
+      color: "bg-pink-500",
+      hoverColor: "hover:bg-pink-600",
+      path: "/admin/recipes",
     },
   ];
 

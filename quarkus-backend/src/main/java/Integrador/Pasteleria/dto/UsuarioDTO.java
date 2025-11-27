@@ -17,6 +17,7 @@ public class UsuarioDTO {
     private LocalDateTime lastAccess;
     private Boolean active;
     private LocalDateTime createdAt;
+    private String fotoPerfil;
 
     public UsuarioDTO(Integer idUser, String username, String userEmail, String userRole, String phoneNumber,
             LocalDateTime createdAt) {

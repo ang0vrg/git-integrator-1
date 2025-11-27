@@ -45,6 +45,7 @@ public class ClienteResource {
                     dto.setCreatedAt(usuario.getCreatedAt());
                     dto.setLastAccess(usuario.getLastAccess());
                     dto.setActive(usuario.getActive());
+                    dto.setFotoPerfil(usuario.getFotoPerfil());
                     return Response.ok(dto).build();
                 })
                 .orElse(Response.status(Response.Status.NOT_FOUND).build());
@@ -79,5 +80,26 @@ public class ClienteResource {
         response.put("orders", "[]"); // Por ahora vacío
 
         return Response.ok(response).build();
+    }
+
+    @POST
+    @Path("/profile/image")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed({ "cliente", "trabajador", "administrador" })
+    public Response uploadProfileImage(Map<String, String> body) {
+        String email = jwt.getName();
+        String base64Image = body.get("image");
+
+        if (base64Image == null || base64Image.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Image data is required").build();
+        }
+
+        return usuarioService.findByUserEmail(email)
+                .map(usuario -> {
+                    usuario.setFotoPerfil(base64Image);
+                    usuarioService.updateUser(usuario);
+                    return Response.ok().build();
+                })
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 }

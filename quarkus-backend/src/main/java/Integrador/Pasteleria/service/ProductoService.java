@@ -49,6 +49,17 @@ public class ProductoService {
     }
 
     @Transactional
+    public boolean updateImage(Integer id, String base64Image) {
+        Producto producto = em.find(Producto.class, id);
+        if (producto != null) {
+            producto.setProductImage(base64Image);
+            em.merge(producto);
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
     public boolean delete(Integer id) {
         Producto producto = em.find(Producto.class, id);
         if (producto != null) {

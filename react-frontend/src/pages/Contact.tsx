@@ -13,9 +13,45 @@ import Menu from "../components/Menu";
 import Footer from "../components/Footer";
 
 const Contact: React.FC = () => {
-  const handleSubmit = (e: FormEvent) => {
+  const [loading, setLoading] = React.useState(false);
+  const [formData, setFormData] = React.useState({
+    nombre: "",
+    apellido: "",
+    email: "",
+    telefono: "",
+    asunto: "",
+    mensaje: ""
+  });
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    alert("Mensaje enviado. ¡Gracias por contactarnos!");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+      
+      if (res.ok) {
+        alert("Mensaje enviado. ¡Gracias por contactarnos!");
+        setFormData({
+          nombre: "",
+          apellido: "",
+          email: "",
+          telefono: "",
+          asunto: "",
+          mensaje: ""
+        });
+      } else {
+        alert("Error al enviar el mensaje. Por favor intente nuevamente.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error de conexión");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,6 +91,8 @@ const Contact: React.FC = () => {
                 <input
                   type="text"
                   required
+                  value={formData.nombre}
+                  onChange={(e) => setFormData({...formData, nombre: e.target.value})}
                   className="p-3 border border-gray-300 rounded-lg focus:ring-rose-600 focus:border-rose-600"
                 />
               </div>
@@ -65,6 +103,8 @@ const Contact: React.FC = () => {
                 <input
                   type="text"
                   required
+                  value={formData.apellido}
+                  onChange={(e) => setFormData({...formData, apellido: e.target.value})}
                   className="p-3 border border-gray-300 rounded-lg focus:ring-rose-600 focus:border-rose-600"
                 />
               </div>
@@ -77,6 +117,8 @@ const Contact: React.FC = () => {
               <input
                 type="email"
                 required
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="p-3 border border-gray-300 rounded-lg focus:ring-rose-600 focus:border-rose-600"
               />
             </div>
@@ -87,6 +129,8 @@ const Contact: React.FC = () => {
               </label>
               <input
                 type="text"
+                value={formData.telefono}
+                onChange={(e) => setFormData({...formData, telefono: e.target.value})}
                 className="p-3 border border-gray-300 rounded-lg focus:ring-rose-600 focus:border-rose-600"
               />
             </div>
@@ -96,6 +140,8 @@ const Contact: React.FC = () => {
               <input
                 type="text"
                 required
+                value={formData.asunto}
+                onChange={(e) => setFormData({...formData, asunto: e.target.value})}
                 className="p-3 border border-gray-300 rounded-lg focus:ring-rose-600 focus:border-rose-600"
               />
             </div>
@@ -107,15 +153,18 @@ const Contact: React.FC = () => {
               <textarea
                 rows={5}
                 required
+                value={formData.mensaje}
+                onChange={(e) => setFormData({...formData, mensaje: e.target.value})}
                 className="p-3 border border-gray-300 rounded-lg focus:ring-rose-600 focus:border-rose-600"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full px-6 py-3 bg-rose-600 text-white font-bold rounded-lg hover:bg-rose-700 transition"
+              disabled={loading}
+              className="w-full px-6 py-3 bg-rose-600 text-white font-bold rounded-lg hover:bg-rose-700 transition disabled:opacity-50"
             >
-              Enviar Mensaje
+              {loading ? "Enviando..." : "Enviar Mensaje"}
             </button>
           </form>
         </section>

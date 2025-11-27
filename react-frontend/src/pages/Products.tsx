@@ -1,196 +1,213 @@
-import React, { useState, FormEvent } from 'react';
-import { Link } from 'react-router-dom';
-
-//IMPORTACIONES DE FONT AWESOME ===
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// Íconos Sólidos (fas)
 import {
-    faMapMarkerAlt,
-    faCreditCard, // Icono para tarjeta
-    faShoppingCart // Icono de carrito
+    faShoppingCart,
+    faPlus,
+    faMinus
 } from '@fortawesome/free-solid-svg-icons';
-import {
-    faWhatsapp,
-    faFacebookF,
-    faInstagram,
-    faTiktok
-} from '@fortawesome/free-brands-svg-icons';
-// =======================================
-
+import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import "../App.css";
 import Footer from '../components/Footer';
 import Menu from '../components/Menu';
 
+interface Product {
+  idProduct: number;
+  productName: string;
+  productDescription: string;
+  productPrice: number;
+  productImage: string;
+  categoria: string;
+  porciones: number;
+}
+
 const Products: React.FC = () => {
-  // Estados simulados para el resumen de compra
-  const [producto, setProducto] = useState("Torta Clásica");
-  const [subtotal, setSubtotal] = useState(50.0);
-  const [envio, setEnvio] = useState(10.0);
-  const [total, setTotal] = useState(60.0);
+  const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useState<{ [key: number]: number }>({});
 
-  // Estados simulados para la tarjeta de crédito
-  const [cardName, setCardName] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [cvv, setCvv] = useState("");
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
-  const handlePayment = (e: FormEvent) => {
-    e.preventDefault();
-
-    // *Validación de tarjeta y procesamiento**
-    if (!cardName || cardNumber.length < 16 || !expiryDate || cvv.length < 3) {
-      alert("Por favor, completa correctamente los datos de la tarjeta.");
-      return;
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/productos');
+      if (res.ok) {
+        const data = await res.json();
+        setProducts(data.filter((p: Product) => p.productImage)); // Only show products with images
+      }
+    } catch (err) {
+      console.error('Error fetching products:', err);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    console.log("Procesando pago...");
-    // Simulación de éxito
-    alert(
-      `Pago de S/ ${total.toFixed(
-        2
-      )} procesado (simulado). ¡Gracias por su compra!`
-    );
+  const handleAddToCart = (productId: number) => {
+    setCart(prev => ({
+      ...prev,
+      [productId]: (prev[productId] || 0) + 1
+    }));
+  };
+
+  const handleRemoveFromCart = (productId: number) => {
+    setCart(prev => {
+      const newCart = { ...prev };
+      if (newCart[productId] > 1) {
+        newCart[productId]--;
+      } else {
+        delete newCart[productId];
+      }
+      return newCart;
+    });
+  };
+
+  const getTotalItems = () => {
+    return Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+  };
+
+  const getTotalPrice = () => {
+    return Object.entries(cart).reduce((sum, [id, qty]) => {
+      const product = products.find(p => p.idProduct === Number(id));
+      return sum + (product?.productPrice || 0) * qty;
+    }, 0);
+  };
+
+  const handleCheckout = () => {
+    if (getTotalItems() > 0) {
+      // Store cart in localStorage for the payment page
+      localStorage.setItem('cart', JSON.stringify(cart));
+      localStorage.setItem('products', JSON.stringify(products));
+      navigate('/pay');
+    }
   };
 
   return (
     <>
       <Menu />
-      <main className="min-h-screen flex flex-col">
-        {/* PAY SECTION*/}
-        <section className="max-w-5xl mx-auto p-5 py-10 w-full">
-          <h1 className="text-4xl font-bold text-center mb-8 text-text-dark">
-            Checkout y Pago
-          </h1>
-
-          {/* RESUMEN DE COMPRA */}
-          <div className="bg-white p-6 rounded-lg shadow-xl mb-8 border-l-4 border-primary">
-            <h2 className="text-2xl font-bold text-text-dark mb-4 flex items-center gap-2">
-              <FontAwesomeIcon icon={faShoppingCart} className="text-primary" />{" "}
-              Resumen de su compra
-            </h2>
-            <div className="space-y-2 py-4 border-t border-b border-gray-200 my-4 text-left text-lg">
-              <p className="flex justify-between">
-                <strong>Producto:</strong> <span>{producto} (x1)</span>
-              </p>
-              <p className="flex justify-between">
-                <strong>Subtotal:</strong> <span>S/ {subtotal.toFixed(2)}</span>
-              </p>
-              <p className="flex justify-between">
-                <strong>Costo de Envío:</strong>{" "}
-                <span>S/ {envio.toFixed(2)}</span>
-              </p>
-            </div>
-            <h3 className="text-3xl font-bold text-right text-primary mt-4">
-              Total a Pagar: S/ {total.toFixed(2)}
-            </h3>
+      <main className="min-h-screen flex flex-col bg-gray-50">
+        {/* Header */}
+        <section className="bg-gradient-to-r from-pink-500 to-rose-500 text-white py-12">
+          <div className="max-w-7xl mx-auto px-4">
+            <h1 className="text-4xl font-bold mb-2">Nuestros Productos</h1>
+            <p className="text-pink-100">Deliciosos pasteles hechos con amor</p>
           </div>
-
-          {/* FORMULARIO DE PAGO */}
-          <form
-            className="bg-white p-6 rounded-lg shadow-xl space-y-6 text-left"
-            onSubmit={handlePayment}
-          >
-            <h2 className="text-2xl font-bold text-text-dark mb-4 flex items-center gap-2">
-              <FontAwesomeIcon icon={faCreditCard} className="text-primary" />{" "}
-              Datos de Pago
-            </h2>
-
-            <div className="flex flex-col">
-              <label
-                htmlFor="cardName"
-                className="font-semibold text-text-dark mb-1"
-              >
-                Nombre en la Tarjeta
-              </label>
-              <input
-                type="text"
-                id="cardName"
-                value={cardName}
-                onChange={(e) => setCardName(e.target.value)}
-                placeholder="Ej: JUAN PEREZ"
-                required
-                className="mt-1 p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
-              />
-            </div>
-
-            <div className="flex flex-col">
-              <label
-                htmlFor="cardNumber"
-                className="font-semibold text-text-dark mb-1"
-              >
-                Número de Tarjeta
-              </label>
-              <input
-                type="text"
-                id="cardNumber"
-                value={cardNumber}
-                onChange={(e) =>
-                  setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))
-                }
-                placeholder="0000 0000 0000 0000"
-                required
-                minLength={16}
-                maxLength={16}
-                className="mt-1 p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
-              />
-            </div>
-
-            {/* Detalles de la Tarjeta (Fecha y CVV) - En una sola fila en escritorio */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 flex flex-col">
-                <label
-                  htmlFor="expiryDate"
-                  className="font-semibold text-text-dark mb-1"
-                >
-                  Fecha de Vencimiento (MM/AA)
-                </label>
-                <input
-                  type="text"
-                  id="expiryDate"
-                  value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
-                  placeholder="MM/AA"
-                  required
-                  minLength={5}
-                  maxLength={5}
-                  className="mt-1 p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
-                />
-              </div>
-              <div className="flex-1 flex flex-col">
-                <label
-                  htmlFor="cvv"
-                  className="font-semibold text-text-dark mb-1"
-                >
-                  CVV
-                </label>
-                <input
-                  type="text"
-                  id="cvv"
-                  value={cvv}
-                  onChange={(e) =>
-                    setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))
-                  }
-                  placeholder="123"
-                  required
-                  minLength={3}
-                  maxLength={4}
-                  className="mt-1 p-3 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full px-6 py-3 bg-secondary text-text-dark font-bold rounded-lg hover:bg-yellow-400 transition duration-300 mt-6"
-            >
-              Pagar S/ {total.toFixed(2)}
-            </button>
-          </form>
         </section>
 
-        {/* BOTÓN FLOTANTE DE WHATSAPP */}
+        {/* Products Grid */}
+        <section className="max-w-7xl mx-auto px-4 py-10 w-full flex-1">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No hay productos disponibles en este momento.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+                <div
+                  key={product.idProduct}
+                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                >
+                  {/* Product Image */}
+                  <div className="h-48 overflow-hidden bg-gray-200">
+                    {product.productImage ? (
+                      <img
+                        src={product.productImage}
+                        alt={product.productName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        Sin imagen
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-xl font-bold text-gray-800">
+                        {product.productName}
+                      </h3>
+                      <span className="px-3 py-1 bg-pink-100 text-pink-800 text-xs font-semibold rounded-full">
+                        {product.categoria}
+                      </span>
+                    </div>
+                    
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      {product.productDescription || 'Delicioso producto artesanal'}
+                    </p>
+
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-2xl font-bold text-pink-600">
+                        S/ {product.productPrice.toFixed(2)}
+                      </span>
+                      {product.porciones && (
+                        <span className="text-sm text-gray-500">
+                          {product.porciones} porciones
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Add to Cart Controls */}
+                    <div className="flex items-center gap-2">
+                      {cart[product.idProduct] ? (
+                        <div className="flex items-center gap-3 w-full">
+                          <button
+                            onClick={() => handleRemoveFromCart(product.idProduct)}
+                            className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
+                          >
+                            <FontAwesomeIcon icon={faMinus} />
+                          </button>
+                          <span className="text-xl font-bold min-w-[2rem] text-center">
+                            {cart[product.idProduct]}
+                          </span>
+                          <button
+                            onClick={() => handleAddToCart(product.idProduct)}
+                            className="flex-1 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition"
+                          >
+                            <FontAwesomeIcon icon={faPlus} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleAddToCart(product.idProduct)}
+                          className="w-full bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition flex items-center justify-center gap-2"
+                        >
+                          <FontAwesomeIcon icon={faShoppingCart} />
+                          Agregar al Carrito
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Floating Cart Button */}
+        {getTotalItems() > 0 && (
+          <button
+            onClick={handleCheckout}
+            className="fixed bottom-6 left-6 bg-pink-600 text-white px-6 py-4 rounded-full shadow-2xl hover:bg-pink-700 transition-all duration-300 z-50 flex items-center gap-3"
+          >
+            <FontAwesomeIcon icon={faShoppingCart} className="text-xl" />
+            <div className="text-left">
+              <div className="text-sm font-semibold">{getTotalItems()} items</div>
+              <div className="text-xs">S/ {getTotalPrice().toFixed(2)}</div>
+            </div>
+          </button>
+        )}
+
+        {/* WhatsApp Button */}
         <a
-          href="https://wa.me/930263546?text=Hola%20La%20Casa%20del%20Chantilly,%20tengo%20una%20consulta%20sobre%20mi%20pago."
+          href="https://wa.me/930263546?text=Hola%20La%20Casa%20del%20Chantilly,%20tengo%20una%20consulta."
           className="fixed bottom-6 right-6 p-4 rounded-full bg-whatsapp text-white shadow-xl hover:bg-green-600 transition duration-300 z-50 text-3xl flex items-center justify-center"
           target="_blank"
           rel="noopener noreferrer"
@@ -200,7 +217,6 @@ const Products: React.FC = () => {
         </a>
       </main>
 
-      {/* FOOTER */}
       <Footer />
     </>
   );

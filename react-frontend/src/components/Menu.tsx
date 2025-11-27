@@ -28,6 +28,7 @@ const menuItems: MenuItem[] = [
   { path: "/dashboard", label: "Dashboard", minRole: "trabajador" },
 
   { path: "/worker/reports/users", label: "Reportes", minRole: "trabajador" },
+  { path: "/admin/recipes/create", label: "Recetas", minRole: "administrador" },
 ];
 
 const Menu: React.FC = () => {
@@ -39,7 +40,9 @@ const Menu: React.FC = () => {
   const [createdAt, setCreatedAt] = useState("");
   const [fullName, setFullName] = useState("");
 
-  /* ---------- leer token ---------- */
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  /* ---------- leer token y perfil ---------- */
   useEffect(() => {
     const tk = localStorage.getItem("token");
     if (!tk) return;
@@ -49,11 +52,26 @@ const Menu: React.FC = () => {
       setRole((payload.groups?.[0] as UserRole) || "cliente");
       setFullName(payload.name || payload.upn?.split("@")[0] || "");
       setCreatedAt(payload.createdAt || "");
+
+      // Fetch profile image
+      fetch("/api/cliente/profile", {
+        headers: { Authorization: `Bearer ${tk}` },
+      })
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error("Failed to fetch profile");
+        })
+        .then((data) => {
+          if (data.fotoPerfil) setProfileImage(data.fotoPerfil);
+        })
+        .catch((err) => console.error("Error loading profile image:", err));
+
     } catch {
       setEmail("");
       setRole("cliente");
       setFullName("");
       setCreatedAt("");
+      setProfileImage(null);
     }
   }, []);
 
@@ -120,10 +138,18 @@ const Menu: React.FC = () => {
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => setDropdownOpen((v) => !v)}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-yellow-400 text-rose-900 hover:bg-yellow-300 transition duration-200"
+                  className="flex items-center space-x-2 px-2 py-1 rounded-lg bg-yellow-400 text-rose-900 hover:bg-yellow-300 transition duration-200"
                 >
-                  <FontAwesomeIcon icon={faUser} />
-                  <span className="hidden sm:inline text-sm">
+                  {profileImage ? (
+                    <img
+                      src={profileImage}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full object-cover border-2 border-white"
+                    />
+                  ) : (
+                    <FontAwesomeIcon icon={faUser} className="text-lg" />
+                  )}
+                  <span className="hidden sm:inline text-sm font-medium">
                     {fullName || email.split("@")[0]}
                   </span>
                   <FontAwesomeIcon

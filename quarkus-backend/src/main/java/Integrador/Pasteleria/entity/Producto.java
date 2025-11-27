@@ -19,7 +19,7 @@ public class Producto {
     private Integer idProduct;
 
     @ManyToOne
-    @JoinColumn(name = "id_receta", nullable = false)
+    @JoinColumn(name = "id_receta", nullable = true)
     private Receta receta;
 
     @Column(name = "codigo_sku", unique = true)
@@ -68,7 +68,7 @@ public class Producto {
     @Column(name = "stock_disponible")
     private Integer stockDisponible = 0;
 
-    @Column(name = "imagen_url")
+    @Column(name = "imagen_url", columnDefinition = "LONGTEXT")
     private String productImage;
 
     @Column(name = "etiquetas")

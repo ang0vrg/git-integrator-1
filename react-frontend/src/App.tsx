@@ -13,7 +13,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Home from "./pages/Home";
 import Products from "./pages/Products";
-import Pay from "./pages/Pay";
+import PaymentPage from "./pages/PaymentPage";
 import About from "./pages/About";
 import Account from "./pages/Account";
 import Stores from "./pages/Stores";
@@ -24,6 +24,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import SuppliersManagement from "./pages/SuppliersManagement";
 import InventoryManagement from "./pages/InventoryManagement";
 import ImportIngredients from "./pages/ImportIngredients";
+import CreateRecipe from "./pages/CreateRecipe";
+import RecipeList from "./pages/RecipeList";
+import ProviderReport from "./pages/ProviderReport";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App(): React.ReactElement {
@@ -49,7 +52,7 @@ function App(): React.ReactElement {
           <Route element={<ProtectedRoute />}>
             <Route path="/account" element={<Account />} />
             <Route path="/cart" element={<CartPage />} />
-            <Route path="/pay" element={<Pay />} />
+            <Route path="/pay" element={<PaymentPage />} />
           </Route>
 
           {/* ámbito worker / admin */}
@@ -62,8 +65,13 @@ function App(): React.ReactElement {
             <Route path="/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/suppliers" element={<SuppliersManagement />} />
             <Route path="/admin/inventory" element={<InventoryManagement />} />
-            <Route path="/admin/import" element={<ImportIngredients />} />
+            <Route path="/admin/inventory" element={<InventoryManagement />} />
+            <Route path="/admin/inventory/import" element={<ImportIngredients />} />
+            <Route path="/admin/import" element={<Navigate to="/admin/inventory/import" replace />} />
+            <Route path="/admin/recipes/create" element={<CreateRecipe />} />
+            <Route path="/admin/recipes" element={<RecipeList />} />
             <Route path="/admin/reports/users" element={<UsersReport />} />
+            <Route path="/admin/reports/providers" element={<ProviderReport />} />
           </Route>
 
           {/* 404 */}

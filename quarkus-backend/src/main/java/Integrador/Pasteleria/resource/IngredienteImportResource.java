@@ -53,7 +53,14 @@ public class IngredienteImportResource {
             // Obtener archivo
             List<InputPart> inputParts = uploadForm.get("file");
             InputPart inputPart = inputParts.get(0);
-            InputStream inputStream = inputPart.getBody(InputStream.class, null);
+
+            // Leer el stream a un byte array para evitar problemas de cierre prematuro
+            byte[] bytes;
+            try (InputStream is = inputPart.getBody(InputStream.class, null)) {
+                bytes = is.readAllBytes();
+            }
+
+            InputStream inputStream = new java.io.ByteArrayInputStream(bytes);
 
             ImportResultDTO result;
             String fileName = getFileName(inputPart);
@@ -67,12 +74,18 @@ public class IngredienteImportResource {
                     result = importService.importFromExcel(inputStream, idProveedor);
                 }
             } finally {
-                // El servicio puede haber cerrado el stream, pero aseguramos
                 try {
                     inputStream.close();
                 } catch (Exception e) {
                     /* ignore */ }
             }
+
+            if (result == null) {
+                Log.error("❌ El resultado de la importación es NULL");
+                return Response.serverError().entity(createErrorResult("Error interno: Resultado nulo")).build();
+            }
+
+            Log.info("📤 Resultado a devolver: " + result.toString());
 
             if (result.getExitoso()) {
                 Log.info("✅ Importación exitosa: " + result.getIngredientesCreados() +
@@ -84,7 +97,7 @@ public class IngredienteImportResource {
             }
 
         } catch (Exception e) {
-            Log.error("❌ Error en importación de Excel", e);
+            Log.error("❌ Error en importación de Excel/CSV", e);
             return Response.serverError()
                     .entity(createErrorResult("Error procesando archivo: " + e.getMessage()))
                     .build();

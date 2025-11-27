@@ -27,6 +27,9 @@ public class Usuario {
     @Column(name = "contrasena", nullable = false)
     private String userPassword;
 
+    @Column(name = "foto_perfil", columnDefinition = "LONGTEXT")
+    private String fotoPerfil;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false)
     private Role userRole = Role.cliente;

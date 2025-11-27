@@ -40,6 +40,22 @@ public class ProductoResource {
         return Response.status(Response.Status.NOT_FOUND).build();
     }
 
+    @POST
+    @Path("/{id}/image")
+    @RolesAllowed({ "administrador", "trabajador" })
+    public Response uploadImage(@PathParam("id") Integer id, java.util.Map<String, String> body) {
+        String base64Image = body.get("image");
+        if (base64Image == null || base64Image.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Image data is required").build();
+        }
+
+        boolean updated = productoService.updateImage(id, base64Image);
+        if (updated) {
+            return Response.ok().build();
+        }
+        return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
     @DELETE
     @Path("/{id}")
     @RolesAllowed({ "administrador", "trabajador" })

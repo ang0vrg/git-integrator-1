@@ -45,6 +45,11 @@ public class UsuarioService {
         return usuario;
     }
 
+    @Transactional
+    public Usuario updateUser(Usuario usuario) {
+        return em.merge(usuario);
+    }
+
     public String hashPassword(String plainPassword) {
         return BCrypt.hashpw(plainPassword, BCrypt.gensalt());
     }
@@ -117,6 +122,7 @@ public class UsuarioService {
         dto.setLastAccess(u.getLastAccess());
         dto.setActive(u.getActive());
         dto.setCreatedAt(u.getCreatedAt());
+        dto.setFotoPerfil(u.getFotoPerfil());
         return dto;
     }
 
@@ -142,6 +148,8 @@ public class UsuarioService {
             entity.setUserRole(Usuario.Role.valueOf(dto.getUserRole()));
         if (dto.getActive() != null)
             entity.setActive(dto.getActive());
+        if (dto.getFotoPerfil() != null)
+            entity.setFotoPerfil(dto.getFotoPerfil());
     }
 
     @Transactional
