@@ -7,6 +7,7 @@ import {
   faBoxOpen,
   faPlus,
   faImage,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
@@ -180,13 +181,50 @@ export default function RecipeList() {
                     </span>
                     <span>{recipe.tiempoPreparacionMin} min</span>
                   </div>
-                  <button
-                    onClick={() => handleOpenModal(recipe)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-                  >
-                    <FontAwesomeIcon icon={faBoxOpen} />
-                    Crear Producto
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleOpenModal(recipe)}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                    >
+                      <FontAwesomeIcon icon={faBoxOpen} />
+                      Crear Producto
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (
+                          window.confirm(
+                            "¿Estás seguro de eliminar esta receta?"
+                          )
+                        ) {
+                          try {
+                            const res = await fetch(
+                              `/api/recetas/${recipe.idReceta}`,
+                              {
+                                method: "DELETE",
+                                headers: {
+                                  Authorization: `Bearer ${localStorage.getItem(
+                                    "token"
+                                  )}`,
+                                },
+                              }
+                            );
+                            if (res.ok) {
+                              fetchRecipes();
+                            } else {
+                              alert("Error al eliminar la receta");
+                            }
+                          } catch (err) {
+                            console.error(err);
+                            alert("Error al eliminar la receta");
+                          }
+                        }
+                      }}
+                      className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
+                      title="Eliminar Receta"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

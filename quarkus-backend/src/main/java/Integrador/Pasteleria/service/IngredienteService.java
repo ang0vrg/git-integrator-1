@@ -149,6 +149,9 @@ public class IngredienteService {
         entity.setPuntoReorden(dto.getPuntoReorden());
         entity.setCostoPromedio(dto.getCostoPromedio());
         entity.setUltimoCosto(dto.getUltimoCosto());
+        entity.setPrecioMinorista(dto.getPrecioMinorista());
+        entity.setPrecioMayorista(dto.getPrecioMayorista());
+        entity.setPrecioDistribuidor(dto.getPrecioDistribuidor());
         entity.setRequiereRefrigeracion(dto.getRequiereRefrigeracion());
         entity.setDiasVidaUtil(dto.getDiasVidaUtil());
         entity.setAlergeno(dto.getAlergeno());
@@ -170,6 +173,9 @@ public class IngredienteService {
         dto.setPuntoReorden(entity.getPuntoReorden());
         dto.setCostoPromedio(entity.getCostoPromedio());
         dto.setUltimoCosto(entity.getUltimoCosto());
+        dto.setPrecioMinorista(entity.getPrecioMinorista());
+        dto.setPrecioMayorista(entity.getPrecioMayorista());
+        dto.setPrecioDistribuidor(entity.getPrecioDistribuidor());
         dto.setRequiereRefrigeracion(entity.getRequiereRefrigeracion());
         dto.setDiasVidaUtil(entity.getDiasVidaUtil());
         dto.setAlergeno(entity.getAlergeno());

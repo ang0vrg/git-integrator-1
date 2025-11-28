@@ -87,21 +87,106 @@ export default function ImportIngredients() {
   };
 
   const downloadTemplate = () => {
-    // Crear CSV de ejemplo
-    const csvContent = `Código,Nombre,Unidad,Precio Minorista,Precio Mayorista,Precio Distribuidor,Stock Inicial
-ING001,Harina 000,kg,3.50,3.20,3.00,100
-ING002,Azúcar Blanca,kg,2.80,2.50,2.30,50
-ING003,Mantequilla,kg,12.00,11.50,11.00,25`;
+    import("xlsx").then((XLSX) => {
+      const headers = [
+        {
+          Código: "ING001",
+          Nombre: "Harina 000",
+          Unidad: "kg",
+          Categoría: "harina",
+          "Costo Unitario": 2.50,
+          "Precio Minorista": 3.50,
+          "Precio Mayorista": 3.20,
+          "Precio Distribuidor": 3.00,
+          "Stock Inicial": 100,
+          "Stock Mínimo": 10,
+          "Stock Máximo": 500,
+          "Punto Reorden": 20,
+          "Refrigeración": "No",
+          "Vida Útil (días)": 180,
+          "Alergeno": "Si"
+        },
+        {
+          Código: "ING002",
+          Nombre: "Azúcar Blanca",
+          Unidad: "kg",
+          Categoría: "azucar",
+          "Costo Unitario": 2.00,
+          "Precio Minorista": 2.80,
+          "Precio Mayorista": 2.50,
+          "Precio Distribuidor": 2.30,
+          "Stock Inicial": 50,
+          "Stock Mínimo": 5,
+          "Stock Máximo": 200,
+          "Punto Reorden": 10,
+          "Refrigeración": "No",
+          "Vida Útil (días)": 365,
+          "Alergeno": "No"
+        },
+        {
+          Código: "ING003",
+          Nombre: "Mantequilla",
+          Unidad: "kg",
+          Categoría: "lacteo",
+          "Costo Unitario": 10.00,
+          "Precio Minorista": 12.00,
+          "Precio Mayorista": 11.50,
+          "Precio Distribuidor": 11.00,
+          "Stock Inicial": 25,
+          "Stock Mínimo": 5,
+          "Stock Máximo": 50,
+          "Punto Reorden": 8,
+          "Refrigeración": "Si",
+          "Vida Útil (días)": 30,
+          "Alergeno": "Si"
+        }
+      ];
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", "plantilla_ingredientes.csv");
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const ws = XLSX.utils.json_to_sheet(headers, {
+        header: [
+          "Código",
+          "Nombre",
+          "Unidad",
+          "Categoría",
+          "Costo Unitario",
+          "Precio Minorista",
+          "Precio Mayorista",
+          "Precio Distribuidor",
+          "Stock Inicial",
+          "Stock Mínimo",
+          "Stock Máximo",
+          "Punto Reorden",
+          "Refrigeración",
+          "Vida Útil (días)",
+          "Alergeno"
+        ],
+        skipHeader: false
+      });
+      
+      // Ajustar ancho de columnas
+      const wscols = [
+        { wch: 10 }, // Código
+        { wch: 20 }, // Nombre
+        { wch: 10 }, // Unidad
+        { wch: 12 }, // Categoría
+        { wch: 15 }, // Costo Unitario
+        { wch: 15 }, // Precio Minorista
+        { wch: 15 }, // Precio Mayorista
+        { wch: 18 }, // Precio Distribuidor
+        { wch: 12 }, // Stock Inicial
+        { wch: 12 }, // Stock Mínimo
+        { wch: 12 }, // Stock Máximo
+        { wch: 12 }, // Punto Reorden
+        { wch: 12 }, // Refrigeración
+        { wch: 12 }, // Vida Útil
+        { wch: 10 }, // Alergeno
+      ];
+      ws["!cols"] = wscols;
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Plantilla");
+      XLSX.writeFile(wb, "plantilla_ingredientes.xlsx");
+    });
   };
 
   return (
@@ -182,6 +267,18 @@ ING003,Mantequilla,kg,12.00,11.50,11.00,25`;
                   <td className="px-4 py-2 text-gray-600">kg</td>
                 </tr>
                 <tr>
+                  <td className="px-4 py-2">Categoría</td>
+                  <td className="px-4 py-2">Texto</td>
+                  <td className="px-4 py-2">No</td>
+                  <td className="px-4 py-2 text-gray-600">harina</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2">Costo Unitario</td>
+                  <td className="px-4 py-2">Número</td>
+                  <td className="px-4 py-2">No</td>
+                  <td className="px-4 py-2 text-gray-600">2.50</td>
+                </tr>
+                <tr>
                   <td className="px-4 py-2">Precio Minorista</td>
                   <td className="px-4 py-2">Número</td>
                   <td className="px-4 py-2">No</td>
@@ -204,6 +301,42 @@ ING003,Mantequilla,kg,12.00,11.50,11.00,25`;
                   <td className="px-4 py-2">Número</td>
                   <td className="px-4 py-2">No</td>
                   <td className="px-4 py-2 text-gray-600">100</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2">Stock Mínimo</td>
+                  <td className="px-4 py-2">Número</td>
+                  <td className="px-4 py-2">No</td>
+                  <td className="px-4 py-2 text-gray-600">10</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2">Stock Máximo</td>
+                  <td className="px-4 py-2">Número</td>
+                  <td className="px-4 py-2">No</td>
+                  <td className="px-4 py-2 text-gray-600">500</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2">Punto Reorden</td>
+                  <td className="px-4 py-2">Número</td>
+                  <td className="px-4 py-2">No</td>
+                  <td className="px-4 py-2 text-gray-600">20</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2">Refrigeración</td>
+                  <td className="px-4 py-2">Si/No</td>
+                  <td className="px-4 py-2">No</td>
+                  <td className="px-4 py-2 text-gray-600">No</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2">Vida Útil (días)</td>
+                  <td className="px-4 py-2">Número</td>
+                  <td className="px-4 py-2">No</td>
+                  <td className="px-4 py-2 text-gray-600">30</td>
+                </tr>
+                <tr>
+                  <td className="px-4 py-2">Alergeno</td>
+                  <td className="px-4 py-2">Si/No</td>
+                  <td className="px-4 py-2">No</td>
+                  <td className="px-4 py-2 text-gray-600">Si</td>
                 </tr>
               </tbody>
             </table>

@@ -10,6 +10,7 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import "../App.css";
 import Footer from '../components/Footer';
 import Menu from '../components/Menu';
+import { useCart } from '../context/CartContext';
 
 interface Product {
   idProduct: number;
@@ -25,7 +26,8 @@ const Products: React.FC = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState<{ [key: number]: number }>({});
+  
+  const { cart, addToCart, removeFromCart, updateQuantity, totalItems, totalPrice } = useCart();
 
   useEffect(() => {
     fetchProducts();
@@ -45,41 +47,26 @@ const Products: React.FC = () => {
     }
   };
 
-  const handleAddToCart = (productId: number) => {
-    setCart(prev => ({
-      ...prev,
-      [productId]: (prev[productId] || 0) + 1
-    }));
+  const getProductQuantity = (productId: number) => {
+    const item = cart.find(i => i.idProduct === productId);
+    return item ? item.quantity : 0;
   };
 
-  const handleRemoveFromCart = (productId: number) => {
-    setCart(prev => {
-      const newCart = { ...prev };
-      if (newCart[productId] > 1) {
-        newCart[productId]--;
-      } else {
-        delete newCart[productId];
-      }
-      return newCart;
-    });
+  const handleAddToCart = (product: Product) => {
+    addToCart(product);
   };
 
-  const getTotalItems = () => {
-    return Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-  };
-
-  const getTotalPrice = () => {
-    return Object.entries(cart).reduce((sum, [id, qty]) => {
-      const product = products.find(p => p.idProduct === Number(id));
-      return sum + (product?.productPrice || 0) * qty;
-    }, 0);
+  const handleRemoveOne = (productId: number) => {
+    const currentQty = getProductQuantity(productId);
+    if (currentQty > 1) {
+      updateQuantity(productId, currentQty - 1);
+    } else {
+      removeFromCart(productId);
+    }
   };
 
   const handleCheckout = () => {
-    if (getTotalItems() > 0) {
-      // Store cart in localStorage for the payment page
-      localStorage.setItem('cart', JSON.stringify(cart));
-      localStorage.setItem('products', JSON.stringify(products));
+    if (totalItems > 0) {
       navigate('/pay');
     }
   };
@@ -108,99 +95,102 @@ const Products: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <div
-                  key={product.idProduct}
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
-                >
-                  {/* Product Image */}
-                  <div className="h-48 overflow-hidden bg-gray-200">
-                    {product.productImage ? (
-                      <img
-                        src={product.productImage}
-                        alt={product.productName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        Sin imagen
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-xl font-bold text-gray-800">
-                        {product.productName}
-                      </h3>
-                      <span className="px-3 py-1 bg-pink-100 text-pink-800 text-xs font-semibold rounded-full">
-                        {product.categoria}
-                      </span>
-                    </div>
-                    
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {product.productDescription || 'Delicioso producto artesanal'}
-                    </p>
-
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-2xl font-bold text-pink-600">
-                        S/ {product.productPrice.toFixed(2)}
-                      </span>
-                      {product.porciones && (
-                        <span className="text-sm text-gray-500">
-                          {product.porciones} porciones
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Add to Cart Controls */}
-                    <div className="flex items-center gap-2">
-                      {cart[product.idProduct] ? (
-                        <div className="flex items-center gap-3 w-full">
-                          <button
-                            onClick={() => handleRemoveFromCart(product.idProduct)}
-                            className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
-                          >
-                            <FontAwesomeIcon icon={faMinus} />
-                          </button>
-                          <span className="text-xl font-bold min-w-[2rem] text-center">
-                            {cart[product.idProduct]}
-                          </span>
-                          <button
-                            onClick={() => handleAddToCart(product.idProduct)}
-                            className="flex-1 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition"
-                          >
-                            <FontAwesomeIcon icon={faPlus} />
-                          </button>
-                        </div>
+              {products.map((product) => {
+                const quantity = getProductQuantity(product.idProduct);
+                return (
+                  <div
+                    key={product.idProduct}
+                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                  >
+                    {/* Product Image */}
+                    <div className="h-48 overflow-hidden bg-gray-200">
+                      {product.productImage ? (
+                        <img
+                          src={product.productImage}
+                          alt={product.productName}
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
-                        <button
-                          onClick={() => handleAddToCart(product.idProduct)}
-                          className="w-full bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition flex items-center justify-center gap-2"
-                        >
-                          <FontAwesomeIcon icon={faShoppingCart} />
-                          Agregar al Carrito
-                        </button>
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          Sin imagen
+                        </div>
                       )}
                     </div>
+
+                    {/* Product Info */}
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="text-xl font-bold text-gray-800">
+                          {product.productName}
+                        </h3>
+                        <span className="px-3 py-1 bg-pink-100 text-pink-800 text-xs font-semibold rounded-full">
+                          {product.categoria}
+                        </span>
+                      </div>
+                      
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {product.productDescription || 'Delicioso producto artesanal'}
+                      </p>
+
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-2xl font-bold text-pink-600">
+                          S/ {product.productPrice.toFixed(2)}
+                        </span>
+                        {product.porciones && (
+                          <span className="text-sm text-gray-500">
+                            {product.porciones} porciones
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Add to Cart Controls */}
+                      <div className="flex items-center gap-2">
+                        {quantity > 0 ? (
+                          <div className="flex items-center gap-3 w-full">
+                            <button
+                              onClick={() => handleRemoveOne(product.idProduct)}
+                              className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
+                            >
+                              <FontAwesomeIcon icon={faMinus} />
+                            </button>
+                            <span className="text-xl font-bold min-w-[2rem] text-center">
+                              {quantity}
+                            </span>
+                            <button
+                              onClick={() => handleAddToCart(product)}
+                              className="flex-1 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition"
+                            >
+                              <FontAwesomeIcon icon={faPlus} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleAddToCart(product)}
+                            className="w-full bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition flex items-center justify-center gap-2"
+                          >
+                            <FontAwesomeIcon icon={faShoppingCart} />
+                            Agregar al Carrito
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
 
         {/* Floating Cart Button */}
-        {getTotalItems() > 0 && (
+        {totalItems > 0 && (
           <button
             onClick={handleCheckout}
             className="fixed bottom-6 left-6 bg-pink-600 text-white px-6 py-4 rounded-full shadow-2xl hover:bg-pink-700 transition-all duration-300 z-50 flex items-center gap-3"
           >
             <FontAwesomeIcon icon={faShoppingCart} className="text-xl" />
             <div className="text-left">
-              <div className="text-sm font-semibold">{getTotalItems()} items</div>
-              <div className="text-xs">S/ {getTotalPrice().toFixed(2)}</div>
+              <div className="text-sm font-semibold">{totalItems} items</div>
+              <div className="text-xs">S/ {totalPrice.toFixed(2)}</div>
             </div>
           </button>
         )}

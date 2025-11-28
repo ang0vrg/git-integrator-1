@@ -29,8 +29,10 @@ public class IngredienteImportService {
     /**
      * Importa ingredientes desde un archivo Excel
      * Formato esperado:
-     * | Código | Nombre | Unidad | Precio Minorista | Precio Mayorista | Precio
-     * Distribuidor | Stock Inicial |
+     * | Código | Nombre | Unidad | Categoría | Precio Minorista | Precio Mayorista
+     * | Precio
+     * Distribuidor | Stock Inicial | Stock Mínimo | Stock Máximo | Punto Reorden |
+     * Refrigeración | Vida Útil | Alergeno |
      */
     @Inject
     ImportacionRepository importacionRepository;
@@ -75,10 +77,18 @@ public class IngredienteImportService {
                     String codigo = getCellValueAsString(row.getCell(0));
                     String nombre = getCellValueAsString(row.getCell(1));
                     String unidad = getCellValueAsString(row.getCell(2));
-                    BigDecimal precioMinorista = getCellValueAsBigDecimal(row.getCell(3));
-                    BigDecimal precioMayorista = getCellValueAsBigDecimal(row.getCell(4));
-                    BigDecimal precioDistribuidor = getCellValueAsBigDecimal(row.getCell(5));
-                    BigDecimal stockInicial = getCellValueAsBigDecimal(row.getCell(6));
+                    String categoriaStr = getCellValueAsString(row.getCell(3));
+                    BigDecimal costoUnitario = getCellValueAsBigDecimal(row.getCell(4));
+                    BigDecimal precioMinorista = getCellValueAsBigDecimal(row.getCell(5));
+                    BigDecimal precioMayorista = getCellValueAsBigDecimal(row.getCell(6));
+                    BigDecimal precioDistribuidor = getCellValueAsBigDecimal(row.getCell(7));
+                    BigDecimal stockInicial = getCellValueAsBigDecimal(row.getCell(8));
+                    BigDecimal stockMinimo = getCellValueAsBigDecimal(row.getCell(9));
+                    BigDecimal stockMaximo = getCellValueAsBigDecimal(row.getCell(10));
+                    BigDecimal puntoReorden = getCellValueAsBigDecimal(row.getCell(11));
+                    Boolean refrigeracion = getCellValueAsBoolean(row.getCell(12));
+                    Integer vidaUtil = getCellValueAsInteger(row.getCell(13));
+                    Boolean alergeno = getCellValueAsBoolean(row.getCell(14));
 
                     if (nombre == null || nombre.trim().isEmpty()) {
                         result.setErrores(result.getErrores() + 1);
@@ -94,7 +104,9 @@ public class IngredienteImportService {
                         continue;
                     }
 
-                    Ingrediente ingrediente = findOrCreateIngrediente(codigo, nombre, unidad, stockInicial, result);
+                    Ingrediente ingrediente = findOrCreateIngrediente(codigo, nombre, unidad, categoriaStr,
+                            stockInicial, stockMinimo, stockMaximo, puntoReorden, refrigeracion, vidaUtil, alergeno,
+                            result);
 
                     // Actualizar precios en Ingrediente
                     if (precioMinorista != null)
@@ -110,9 +122,13 @@ public class IngredienteImportService {
                     detalle.setImportacion(importacion);
                     detalle.setIngrediente(ingrediente);
                     detalle.setCantidad(stockInicial != null ? stockInicial : BigDecimal.ZERO);
-                    // Usamos precio minorista como referencia de costo si no hay otro, o el
-                    // mayorista
-                    detalle.setPrecioUnitario(precioMayorista != null ? precioMayorista : precioMinorista);
+                    // Usamos costo unitario si existe, sino precio mayorista o minorista como
+                    // fallback
+                    BigDecimal costo = costoUnitario;
+                    if (costo == null) {
+                        costo = precioMayorista != null ? precioMayorista : precioMinorista;
+                    }
+                    detalle.setPrecioUnitario(costo);
                     em.persist(detalle);
 
                     // Mantener lógica de precios por proveedor (opcional, pero bueno tener
@@ -201,10 +217,18 @@ public class IngredienteImportService {
                     String codigo = values[0].trim();
                     String nombre = values[1].trim();
                     String unidad = values[2].trim();
-                    BigDecimal precioMinorista = parseDecimal(values.length > 3 ? values[3] : null);
-                    BigDecimal precioMayorista = parseDecimal(values.length > 4 ? values[4] : null);
-                    BigDecimal precioDistribuidor = parseDecimal(values.length > 5 ? values[5] : null);
-                    BigDecimal stockInicial = parseDecimal(values.length > 6 ? values[6] : null);
+                    String categoriaStr = values.length > 3 ? values[3].trim() : null;
+                    BigDecimal costoUnitario = parseDecimal(values.length > 4 ? values[4] : null);
+                    BigDecimal precioMinorista = parseDecimal(values.length > 5 ? values[5] : null);
+                    BigDecimal precioMayorista = parseDecimal(values.length > 6 ? values[6] : null);
+                    BigDecimal precioDistribuidor = parseDecimal(values.length > 7 ? values[7] : null);
+                    BigDecimal stockInicial = parseDecimal(values.length > 8 ? values[8] : null);
+                    BigDecimal stockMinimo = parseDecimal(values.length > 9 ? values[9] : null);
+                    BigDecimal stockMaximo = parseDecimal(values.length > 10 ? values[10] : null);
+                    BigDecimal puntoReorden = parseDecimal(values.length > 11 ? values[11] : null);
+                    Boolean refrigeracion = parseBoolean(values.length > 12 ? values[12] : null);
+                    Integer vidaUtil = parseInteger(values.length > 13 ? values[13] : null);
+                    Boolean alergeno = parseBoolean(values.length > 14 ? values[14] : null);
 
                     if (nombre.isEmpty()) {
                         result.setErrores(result.getErrores() + 1);
@@ -220,7 +244,9 @@ public class IngredienteImportService {
                         continue;
                     }
 
-                    Ingrediente ingrediente = findOrCreateIngrediente(codigo, nombre, unidad, stockInicial, result);
+                    Ingrediente ingrediente = findOrCreateIngrediente(codigo, nombre, unidad, categoriaStr,
+                            stockInicial, stockMinimo, stockMaximo, puntoReorden, refrigeracion, vidaUtil, alergeno,
+                            result);
 
                     // Actualizar precios en Ingrediente
                     if (precioMinorista != null)
@@ -236,7 +262,12 @@ public class IngredienteImportService {
                     detalle.setImportacion(importacion);
                     detalle.setIngrediente(ingrediente);
                     detalle.setCantidad(stockInicial != null ? stockInicial : BigDecimal.ZERO);
-                    detalle.setPrecioUnitario(precioMayorista != null ? precioMayorista : precioMinorista);
+
+                    BigDecimal costo = costoUnitario;
+                    if (costo == null) {
+                        costo = precioMayorista != null ? precioMayorista : precioMinorista;
+                    }
+                    detalle.setPrecioUnitario(costo);
                     em.persist(detalle);
 
                     if (precioMinorista != null && precioMinorista.compareTo(BigDecimal.ZERO) > 0) {
@@ -297,8 +328,9 @@ public class IngredienteImportService {
         }
     }
 
-    private Ingrediente findOrCreateIngrediente(String codigo, String nombre, String unidad,
-            BigDecimal stockInicial, ImportResultDTO result) {
+    private Ingrediente findOrCreateIngrediente(String codigo, String nombre, String unidad, String categoriaStr,
+            BigDecimal stockInicial, BigDecimal stockMinimo, BigDecimal stockMaximo, BigDecimal puntoReorden,
+            Boolean refrigeracion, Integer vidaUtil, Boolean alergeno, ImportResultDTO result) {
         Ingrediente ingrediente = null;
 
         if (codigo != null && !codigo.trim().isEmpty()) {
@@ -326,18 +358,39 @@ public class IngredienteImportService {
             ingrediente.setCodigoInterno(codigo != null ? codigo.trim() : null);
             ingrediente.setNombre(nombre.trim());
             ingrediente.setUnidadMedida(unidad.trim());
+
+            // Set category
+            if (categoriaStr != null && !categoriaStr.trim().isEmpty()) {
+                try {
+                    ingrediente.setCategoria(Ingrediente.Categoria.valueOf(categoriaStr.trim().toLowerCase()));
+                } catch (IllegalArgumentException e) {
+                    ingrediente.setCategoria(Ingrediente.Categoria.otro);
+                    Log.warn("Categoría inválida: " + categoriaStr + ", asignando 'otro'");
+                }
+            } else {
+                ingrediente.setCategoria(Ingrediente.Categoria.otro);
+            }
+
             ingrediente.setStockActual(stockInicial != null ? stockInicial : BigDecimal.ZERO);
-            ingrediente.setStockMinimo(BigDecimal.ZERO);
-            ingrediente.setPuntoReorden(BigDecimal.ZERO);
+            ingrediente.setStockMinimo(stockMinimo != null ? stockMinimo : BigDecimal.ZERO);
+            ingrediente.setStockMaximo(stockMaximo);
+            ingrediente.setPuntoReorden(puntoReorden != null ? puntoReorden : BigDecimal.ZERO);
+            ingrediente.setRequiereRefrigeracion(refrigeracion != null ? refrigeracion : false);
+            ingrediente.setDiasVidaUtil(vidaUtil);
+            ingrediente.setAlergeno(alergeno != null ? alergeno : false);
             ingrediente.setActivo(true);
             em.persist(ingrediente);
             result.setIngredientesCreados(result.getIngredientesCreados() + 1);
             Log.info("Ingrediente creado: " + nombre);
         } else {
+            // Si el ingrediente existe (incluso si estaba inactivo), lo reactivamos
+            ingrediente.setActivo(true);
+
             if (stockInicial != null && stockInicial.compareTo(BigDecimal.ZERO) > 0) {
                 ingrediente.setStockActual(ingrediente.getStockActual().add(stockInicial));
-                em.merge(ingrediente);
             }
+            em.merge(ingrediente);
+
             result.setIngredientesActualizados(result.getIngredientesActualizados() + 1);
             Log.info("Ingrediente actualizado: " + nombre);
         }
@@ -395,6 +448,59 @@ public class IngredienteImportService {
                 return cell.getCellFormula();
             default:
                 return null;
+        }
+    }
+
+    private Boolean getCellValueAsBoolean(Cell cell) {
+        if (cell == null)
+            return null;
+        try {
+            if (cell.getCellType() == CellType.BOOLEAN) {
+                return cell.getBooleanCellValue();
+            } else if (cell.getCellType() == CellType.STRING) {
+                String val = cell.getStringCellValue().trim().toLowerCase();
+                return val.equals("si") || val.equals("sí") || val.equals("true") || val.equals("verdadero")
+                        || val.equals("yes");
+            }
+        } catch (Exception e) {
+            Log.warn("Error parsing boolean: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private Integer getCellValueAsInteger(Cell cell) {
+        if (cell == null)
+            return null;
+        try {
+            if (cell.getCellType() == CellType.NUMERIC) {
+                return (int) cell.getNumericCellValue();
+            } else if (cell.getCellType() == CellType.STRING) {
+                String val = cell.getStringCellValue().trim();
+                if (val.isEmpty())
+                    return null;
+                return Integer.parseInt(val);
+            }
+        } catch (Exception e) {
+            Log.warn("Error parsing integer: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private Boolean parseBoolean(String value) {
+        if (value == null || value.trim().isEmpty())
+            return null;
+        String val = value.trim().toLowerCase();
+        return val.equals("si") || val.equals("sí") || val.equals("true") || val.equals("verdadero")
+                || val.equals("yes");
+    }
+
+    private Integer parseInteger(String value) {
+        if (value == null || value.trim().isEmpty())
+            return null;
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 

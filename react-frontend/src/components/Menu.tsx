@@ -10,6 +10,7 @@ import {
   faChevronDown,
   faShoppingCart,
 } from "@fortawesome/free-solid-svg-icons";
+import { useCart } from "../context/CartContext";
 
 type UserRole = "cliente" | "trabajador" | "administrador";
 
@@ -36,6 +37,8 @@ const Menu: React.FC = () => {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<UserRole>("cliente");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const { cart, removeFromCart, totalItems, totalPrice } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [createdAt, setCreatedAt] = useState("");
   const [fullName, setFullName] = useState("");
@@ -197,13 +200,85 @@ const Menu: React.FC = () => {
               </div>
             )}
             {email && role === "cliente" && (
-              <button
-                onClick={() => handleNav("/cart")}
-                className="text-2xl text-white hover:text-yellow-200 transition"
-                title="Mi carrito"
-              >
-                <FontAwesomeIcon icon={faShoppingCart} />
-              </button>
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => setCartOpen((prev) => !prev)}
+                  className="text-2xl text-white hover:text-yellow-200 transition relative"
+                  title="Mi carrito"
+                >
+                  <FontAwesomeIcon icon={faShoppingCart} />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-yellow-400 text-rose-900 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  )}
+                </button>
+
+                {/* Dropdown Carrito */}
+                <div
+                  className={`absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden transition-all duration-200 ease-out z-50 ${
+                    cartOpen
+                      ? "opacity-100 scale-100 translate-y-0"
+                      : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                  }`}
+                >
+                  <div className="p-4 border-b border-gray-100 bg-rose-50">
+                    <h3 className="font-bold text-gray-800 flex items-center justify-between">
+                      <span>Tu Carrito</span>
+                      <span className="text-sm text-rose-600">{totalItems} items</span>
+                    </h3>
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto">
+                    {cart.length === 0 ? (
+                      <div className="p-6 text-center text-gray-500">
+                        <FontAwesomeIcon icon={faShoppingCart} className="text-3xl mb-2 opacity-30" />
+                        <p>Tu carrito está vacío</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-gray-100">
+                        {cart.map((item) => (
+                          <div key={item.idProduct} className="p-3 flex items-center gap-3 hover:bg-gray-50">
+                            <img 
+                              src={item.productImage || "/placeholder.png"} 
+                              alt={item.productName}
+                              className="w-12 h-12 rounded-md object-cover bg-gray-200"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-800 truncate">{item.productName}</p>
+                              <p className="text-xs text-gray-500">S/ {item.productPrice.toFixed(2)} x {item.quantity}</p>
+                            </div>
+                            <button 
+                              onClick={() => removeFromCart(item.idProduct)}
+                              className="text-gray-400 hover:text-red-500 p-1"
+                            >
+                              <FontAwesomeIcon icon={faTimes} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {cart.length > 0 && (
+                    <div className="p-4 bg-gray-50 border-t border-gray-100">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-gray-600">Total:</span>
+                        <span className="text-lg font-bold text-rose-600">S/ {totalPrice.toFixed(2)}</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setCartOpen(false);
+                          handleNav("/pay");
+                        }}
+                        className="w-full bg-rose-600 text-white py-2 rounded-lg font-medium hover:bg-rose-700 transition shadow-md"
+                      >
+                        Ir a Pagar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
             {!email && (
               <button

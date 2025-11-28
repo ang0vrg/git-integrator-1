@@ -78,4 +78,14 @@ public class RecetaService {
         dto.setActiva(entity.getActiva());
         return dto;
     }
+
+    @Transactional
+    public boolean delete(Integer id) {
+        Receta receta = em.find(Receta.class, id);
+        if (receta != null) {
+            receta.setActiva(false);
+            return true;
+        }
+        return false;
+    }
 }

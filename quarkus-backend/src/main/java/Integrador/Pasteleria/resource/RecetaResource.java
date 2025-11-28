@@ -28,4 +28,14 @@ public class RecetaResource {
         RecetaDTO created = recetaService.create(dto);
         return Response.status(Response.Status.CREATED).entity(created).build();
     }
+
+    @DELETE
+    @Path("/{id}")
+    public Response delete(@PathParam("id") Integer id) {
+        boolean deleted = recetaService.delete(id);
+        if (deleted) {
+            return Response.noContent().build();
+        }
+        return Response.status(Response.Status.NOT_FOUND).build();
+    }
 }

@@ -383,6 +383,41 @@ export default function InventoryManagement() {
                             >
                               <FontAwesomeIcon icon={faEdit} />
                             </button>
+                            <button
+                              onClick={async () => {
+                                if (
+                                  window.confirm(
+                                    "¿Estás seguro de eliminar este ingrediente?"
+                                  )
+                                ) {
+                                  try {
+                                    const res = await fetch(
+                                      `/api/ingredientes/${ingredient.idIngrediente}`,
+                                      {
+                                        method: "DELETE",
+                                        headers: {
+                                          Authorization: `Bearer ${localStorage.getItem(
+                                            "token"
+                                          )}`,
+                                        },
+                                      }
+                                    );
+                                    if (res.ok) {
+                                      fetchIngredients();
+                                    } else {
+                                      alert("Error al eliminar el ingrediente");
+                                    }
+                                  } catch (err) {
+                                    console.error(err);
+                                    alert("Error al eliminar el ingrediente");
+                                  }
+                                }
+                              }}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                              title="Eliminar"
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </button>
                           </div>
                         </td>
                       </tr>
