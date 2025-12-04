@@ -25,6 +25,12 @@ public class Pago {
     @Column(name = "id_venta")
     private Integer idVenta; // Opcional, si se vincula directamente
 
+    @Column(name = "paypal_payment_id")
+    private String paypalPaymentId; // Para PayPal: PAY-xxxxx
+
+    @Column(name = "paypal_transaction_id")
+    private String paypalTransactionId; // Para PayPal: TXN-xxxxx
+
     public Integer getIdPago() {
         return idPago;
     }
@@ -79,5 +85,21 @@ public class Pago {
 
     public void setIdVenta(Integer idVenta) {
         this.idVenta = idVenta;
+    }
+
+    public String getPaypalPaymentId() {
+        return paypalPaymentId;
+    }
+
+    public void setPaypalPaymentId(String paypalPaymentId) {
+        this.paypalPaymentId = paypalPaymentId;
+    }
+
+    public String getPaypalTransactionId() {
+        return paypalTransactionId;
+    }
+
+    public void setPaypalTransactionId(String paypalTransactionId) {
+        this.paypalTransactionId = paypalTransactionId;
     }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Layout } from "../components/Layout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -9,22 +9,32 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faPaypal } from "@fortawesome/free-brands-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
-interface Product {
-  idProduct: number;
-  productName: string;
-  productPrice: number;
-  productImage: string;
+// Utility function to decode JWT token
+function parseJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
 }
 
 export default function PaymentPage() {
   const navigate = useNavigate();
+  const { cart, totalPrice, clearCart } = useCart();
   const [selectedMethod, setSelectedMethod] = useState<
     "yape" | "plin" | "paypal" | "card"
   >("yape");
   const [loading, setLoading] = useState(false);
-  const [cart, setCart] = useState<{ [key: number]: number }>({});
-  const [products, setProducts] = useState<Product[]>([]);
   const [formData, setFormData] = useState({
     cardNumber: "",
     expiry: "",
@@ -32,30 +42,21 @@ export default function PaymentPage() {
     operationCode: "",
   });
 
-  useEffect(() => {
-    // Load cart from localStorage
-    const savedCart = localStorage.getItem('cart');
-    const savedProducts = localStorage.getItem('products');
-    
-    if (savedCart) setCart(JSON.parse(savedCart));
-    if (savedProducts) setProducts(JSON.parse(savedProducts));
-  }, []);
+  // PayPal simulation states
+  const [paypalPaymentId, setPaypalPaymentId] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [paypalLoading, setPaypalLoading] = useState(false);
+  const [codeError, setCodeError] = useState("");
+  const [timeRemaining, setTimeRemaining] = useState(300); // 5 minutes in seconds
 
-  const getCartItems = () => {
-    return Object.entries(cart).map(([id, qty]) => {
-      const product = products.find(p => p.idProduct === Number(id));
-      return { product, quantity: qty };
-    }).filter(item => item.product);
-  };
 
   const getSubtotal = () => {
-    return getCartItems().reduce((sum, item) => 
-      sum + (item.product!.productPrice * item.quantity), 0
-    );
+    return totalPrice;
   };
 
   const getTotal = () => {
-    return getSubtotal(); // You can add shipping or taxes here if needed
+    return totalPrice; // You can add shipping or taxes here if needed
   };
 
   const handlePayment = async (e: React.FormEvent) => {
@@ -63,6 +64,30 @@ export default function PaymentPage() {
     setLoading(true);
 
     try {
+      // Get user ID from JWT token
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Debes iniciar sesión para realizar el pago");
+        navigate("/login");
+        return;
+      }
+
+      const decodedToken = parseJwt(token);
+      const userId = decodedToken?.sub || decodedToken?.userId || decodedToken?.idUser;
+
+      if (!userId) {
+        alert("Error al obtener información del usuario");
+        return;
+      }
+
+      // Prepare cart items for backend
+      const cartItems = cart.map(item => ({
+        idProduct: item.idProduct,
+        quantity: item.quantity,
+        price: item.productPrice,
+        productName: item.productName
+      }));
+
       const paymentData = {
         monto: getTotal(),
         metodoPago: selectedMethod.toUpperCase(),
@@ -70,22 +95,29 @@ export default function PaymentPage() {
           selectedMethod === "yape" || selectedMethod === "plin"
             ? formData.operationCode
             : null,
+        items: cartItems,
+        idUsuario: parseInt(userId),
+        notasCliente: null,
+        dedicatoria: null
       };
 
       const res = await fetch("/api/pagos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(paymentData),
       });
 
-      if (!res.ok) throw new Error("Error processing payment");
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Payment error:", errorText);
+        throw new Error("Error processing payment");
+      }
 
-      // Clear cart after successful payment
-      localStorage.removeItem('cart');
-      localStorage.removeItem('products');
+      // Clear cart after successful payment using CartContext
+      clearCart();
       
       alert("¡Pago realizado con éxito!");
       navigate("/products");
@@ -97,9 +129,152 @@ export default function PaymentPage() {
     }
   };
 
-  const cartItems = getCartItems();
+  // PayPal: Initiate payment and get verification code
+  const initiatePayPalPayment = async () => {
+    setPaypalLoading(true);
+    setCodeError("");
 
-  if (cartItems.length === 0) {
+    try {
+      const res = await fetch("/api/paypal/initiate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          monto: getTotal(),
+          descripcion: "Pago de productos",
+        }),
+      });
+
+      if (!res.ok) throw new Error("Error al iniciar pago PayPal");
+
+      const data = await res.json();
+      setPaypalPaymentId(data.paymentId);
+      setShowCodeInput(true);
+      setTimeRemaining(data.expiresIn || 300);
+    } catch (err) {
+      console.error(err);
+      alert("Error al iniciar el pago con PayPal");
+    } finally {
+      setPaypalLoading(false);
+    }
+  };
+
+  // PayPal: Verify code and complete payment
+  const verifyPayPalCode = async () => {
+    if (!verificationCode || verificationCode.length !== 6) {
+      setCodeError("Ingresa un código de 6 dígitos");
+      return;
+    }
+
+    setPaypalLoading(true);
+    setCodeError("");
+
+    try {
+      // Get user ID from JWT token
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Debes iniciar sesión para realizar el pago");
+        navigate("/login");
+        return;
+      }
+
+      const decodedToken = parseJwt(token);
+      const userId = decodedToken?.sub || decodedToken?.userId || decodedToken?.idUser;
+
+      if (!userId) {
+        setCodeError("Error al obtener información del usuario");
+        return;
+      }
+
+      const verifyRes = await fetch("/api/paypal/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          paymentId: paypalPaymentId,
+          verificationCode: verificationCode,
+        }),
+      });
+
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok || !verifyData.success) {
+        setCodeError(verifyData.message || "Código incorrecto");
+        return;
+      }
+
+      // Payment verified! Now create payment record with cart items
+      const cartItems = cart.map(item => ({
+        idProduct: item.idProduct,
+        quantity: item.quantity,
+        price: item.productPrice,
+        productName: item.productName
+      }));
+
+      const paymentRecord = {
+        monto: getTotal(),
+        metodoPago: "PAYPAL",
+        codigoOperacion: verifyData.transactionId,
+        items: cartItems,
+        idUsuario: parseInt(userId),
+        notasCliente: null,
+        dedicatoria: null
+      };
+
+      const paymentRes = await fetch("/api/pagos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(paymentRecord),
+      });
+
+      if (!paymentRes.ok) {
+        const errorText = await paymentRes.text();
+        console.error("Payment error:", errorText);
+        throw new Error("Error al registrar el pago");
+      }
+
+      // Success!
+      clearCart();
+      alert("¡Pago con PayPal realizado con éxito!");
+      navigate("/products");
+    } catch (err) {
+      console.error(err);
+      setCodeError("Error al procesar el pago");
+    } finally {
+      setPaypalLoading(false);
+    }
+  };
+
+  // Countdown timer effect for PayPal code expiration
+  React.useEffect(() => {
+    if (showCodeInput && timeRemaining > 0) {
+      const timer = setInterval(() => {
+        setTimeRemaining((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    } else if (timeRemaining === 0) {
+      setCodeError("El código ha expirado");
+      setShowCodeInput(false);
+      setPaypalPaymentId(null);
+    }
+  }, [showCodeInput, timeRemaining]);
+
+  // Format time remaining as MM:SS
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+
+  if (cart.length === 0) {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto text-center py-12">
@@ -136,14 +311,14 @@ export default function PaymentPage() {
             </h3>
             
             <div className="space-y-3 mb-4">
-              {cartItems.map(({ product, quantity }) => (
-                <div key={product!.idProduct} className="flex justify-between items-start text-sm">
+              {cart.map((item) => (
+                <div key={item.idProduct} className="flex justify-between items-start text-sm">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-800">{product!.productName}</p>
-                    <p className="text-gray-500">Cantidad: {quantity}</p>
+                    <p className="font-medium text-gray-800">{item.productName}</p>
+                    <p className="text-gray-500">Cantidad: {item.quantity}</p>
                   </div>
                   <p className="font-semibold text-gray-800">
-                    S/ {(product!.productPrice * quantity).toFixed(2)}
+                    S/ {(item.productPrice * item.quantity).toFixed(2)}
                   </p>
                 </div>
               ))}
@@ -278,20 +453,112 @@ export default function PaymentPage() {
                 )}
 
                 {selectedMethod === "paypal" && (
-                  <div className="space-y-6 animate-fadeIn text-center py-8">
-                    <FontAwesomeIcon
-                      icon={faPaypal}
-                      className="text-6xl text-indigo-600"
-                    />
-                    <p className="text-gray-600">
-                      Serás redirigido a PayPal para completar tu pago de forma
-                      segura.
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      * Simulación: Al confirmar el pago se registrará como exitoso.
-                    </p>
+                  <div className="space-y-6 animate-fadeIn">
+                    <div className="bg-indigo-600 text-white p-4 rounded-lg text-center">
+                      <h3 className="font-bold text-xl flex items-center justify-center gap-2">
+                        <FontAwesomeIcon icon={faPaypal} />
+                        PayPal
+                      </h3>
+                      <p className="text-sm opacity-90 mt-1">
+                        Simulación de pago con código de verificación
+                      </p>
+                    </div>
+
+                    {!showCodeInput ? (
+                      <div className="text-center py-6">
+                        <p className="text-gray-600 mb-4">
+                          Haz clic en el botón para generar un código de verificación
+                        </p>
+                        <button
+                          type="button"
+                          onClick={initiatePayPalPayment}
+                          disabled={paypalLoading}
+                          className="px-8 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {paypalLoading ? "Generando..." : `Iniciar Pago - S/ ${getTotal().toFixed(2)}`}
+                        </button>
+                        <p className="text-xs text-gray-400 mt-3">
+                          El código aparecerá en la terminal del servidor
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <FontAwesomeIcon icon={faCheckCircle} className="text-green-600 text-xl mt-0.5" />
+                            <div className="flex-1">
+                              <p className="font-semibold text-green-800">
+                                Código generado exitosamente
+                              </p>
+                              <p className="text-sm text-green-700 mt-1">
+                                Revisa la <strong>terminal del servidor</strong> para ver el código de 6 dígitos
+                              </p>
+                              <p className="text-xs text-green-600 mt-2">
+                                Payment ID: <code className="bg-green-100 px-2 py-0.5 rounded">{paypalPaymentId}</code>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Código de Verificación (6 dígitos)
+                          </label>
+                          <input
+                            type="text"
+                            maxLength={6}
+                            placeholder="000000"
+                            value={verificationCode}
+                            onChange={(e) => {
+                              setVerificationCode(e.target.value.replace(/\D/g, ""));
+                              setCodeError("");
+                            }}
+                            className={`w-full px-4 py-3 border rounded-lg text-center text-2xl font-mono tracking-widest focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                              codeError ? "border-red-500" : "border-gray-300"
+                            }`}
+                          />
+                          {codeError && (
+                            <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
+                              <span>⚠️</span> {codeError}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">
+                            Tiempo restante:
+                          </span>
+                          <span className={`font-mono font-semibold ${timeRemaining < 60 ? "text-red-600" : "text-indigo-600"}`}>
+                            {formatTime(timeRemaining)}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={verifyPayPalCode}
+                          disabled={paypalLoading || verificationCode.length !== 6}
+                          className="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {paypalLoading ? "Verificando..." : "Verificar Código"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowCodeInput(false);
+                            setPaypalPaymentId(null);
+                            setVerificationCode("");
+                            setCodeError("");
+                          }}
+                          className="w-full py-2 text-gray-600 hover:text-gray-800 transition text-sm"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
+
 
                 {selectedMethod === "card" && (
                   <div className="space-y-4 animate-fadeIn">

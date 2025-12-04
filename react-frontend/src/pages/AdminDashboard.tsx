@@ -114,6 +114,15 @@ export default function AdminDashboard() {
       hoverColor: "hover:bg-pink-600",
       path: "/admin/recipes",
     },
+    {
+      title: "Reporte de Ventas",
+      description: "Ver reporte detallado de ventas y estadísticas",
+      icon: faChartLine,
+      color: "bg-indigo-500",
+      hoverColor: "hover:bg-indigo-600",
+      path: "/admin/reports/sales",
+    },
+
   ];
 
   return (

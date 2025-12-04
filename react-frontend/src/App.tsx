@@ -24,6 +24,8 @@ import ResetPassword from "./pages/ResetPassword";
 import CartPage from "./pages/CartPage";
 import ProviderReport from "./pages/ProviderReport";
 import ReportsPage from "./pages/ReportsPage";
+import SalesReportPage from "./pages/SalesReportPage";
+
 
 import "./App.css";
 
@@ -70,7 +72,9 @@ function App() {
               <Route path="/admin/recipes" element={<RecipeList />} />
               <Route path="/admin/reports/users" element={<UsersReport />} />
               <Route path="/admin/reports/providers" element={<ProviderReport />} />
+              <Route path="/admin/reports/sales" element={<SalesReportPage />} />
             </Route>
+
 
             {/* 404 */}
             <Route path="*" element={<Navigate to="/home" replace />} />

@@ -32,23 +32,32 @@ public class ClienteResource {
     @Path("/profile")
     @RolesAllowed({ "cliente", "trabajador", "administrador" })
     public Response getProfile(@Context SecurityContext securityContext) {
-        String email = jwt.getName();
+        try {
+            String email = jwt.getName();
+            if (email == null) {
+                return Response.status(Response.Status.UNAUTHORIZED).entity("Token invalid: email is null").build();
+            }
 
-        return usuarioService.findByUserEmail(email)
-                .map(usuario -> {
-                    UsuarioDTO dto = new UsuarioDTO();
-                    dto.setIdUser(usuario.getIdUser());
-                    dto.setUsername(usuario.getUsername());
-                    dto.setUserEmail(usuario.getUserEmail());
-                    dto.setUserRole(usuario.getUserRole().name());
-                    dto.setPhoneNumber(usuario.getPhoneNumber());
-                    dto.setCreatedAt(usuario.getCreatedAt());
-                    dto.setLastAccess(usuario.getLastAccess());
-                    dto.setActive(usuario.getActive());
-                    dto.setFotoPerfil(usuario.getFotoPerfil());
-                    return Response.ok(dto).build();
-                })
-                .orElse(Response.status(Response.Status.NOT_FOUND).build());
+            return usuarioService.findByUserEmail(email)
+                    .map(usuario -> {
+                        UsuarioDTO dto = new UsuarioDTO();
+                        dto.setIdUser(usuario.getIdUser());
+                        dto.setUsername(usuario.getUsername());
+                        dto.setUserEmail(usuario.getUserEmail());
+                        dto.setUserRole(usuario.getUserRole() != null ? usuario.getUserRole().name() : "cliente");
+                        dto.setPhoneNumber(usuario.getPhoneNumber());
+                        dto.setCreatedAt(usuario.getCreatedAt());
+                        dto.setLastAccess(usuario.getLastAccess());
+                        dto.setActive(usuario.getActive());
+                        dto.setFotoPerfil(usuario.getFotoPerfil());
+                        return Response.ok(dto).build();
+                    })
+                    .orElse(Response.status(Response.Status.NOT_FOUND).build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Error fetching profile: " + e.getMessage()).build();
+        }
     }
 
     /**
