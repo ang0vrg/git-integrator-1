@@ -1,4 +1,3 @@
-// quarkus-backend\src\main\java\Integrador\Pasteleria\dto\RegisterRequest.java
 package Integrador.Pasteleria.dto;
 
 import lombok.Data;
@@ -13,6 +12,7 @@ public class RegisterRequest {
     private String firstName;
     private String lastName;
     private String email;
+    private String country;
     private String phone;
     private String password;
     private String confirmPassword;
