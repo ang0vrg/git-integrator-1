@@ -1,11 +1,13 @@
 // /react-frontend/src/components/Register/RegisterForm.tsx
 import React, { ChangeEvent, FormEvent, FC  } from 'react';
 import FormInput from './common/FormInput'; 
+import { PHONE_RULES } from '../utils/phoneValidation';
 
 interface RegisterFormState {
     firstName: string;
     lastName: string;
     email: string;
+    country: string;
     phone: string;
     password: string;
     confirmPassword: string;
@@ -21,6 +23,7 @@ interface RegisterFormProps {
   handleSubmit: SubmitHandler;
   switchToLogin: LoginSwitchHandler;
   loading: boolean;
+  fieldErrors?: { [key: string]: string };
 }
 
 const RegisterForm: FC<RegisterFormProps> = ({ 
@@ -28,7 +31,8 @@ const RegisterForm: FC<RegisterFormProps> = ({
     handleChange, 
     handleSubmit, 
     switchToLogin,
-    loading
+    loading,
+    fieldErrors = {}
 }) => {
     return (
       <div className="w-full flex justify-center">
@@ -77,6 +81,28 @@ const RegisterForm: FC<RegisterFormProps> = ({
             onChange={handleChange}
             required
           />
+
+          {/* Selector de País */}
+          <div className="space-y-2">
+            <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+              País <em className="text-red-500">*</em>
+            </label>
+            <select
+              id="country"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              required
+            >
+              {Object.entries(PHONE_RULES).map(([code, rule]) => (
+                <option key={code} value={code}>
+                  {rule.countryName} ({rule.dialingCode})
+                </option>
+              ))}
+            </select>
+          </div>
+
           <FormInput
             label={
               <span>
@@ -86,7 +112,7 @@ const RegisterForm: FC<RegisterFormProps> = ({
             id="phone"
             type="tel"
             name="phone"
-            placeholder="+51 213 342 568"
+            placeholder={formData.country ? PHONE_RULES[formData.country as keyof typeof PHONE_RULES]?.dialingCode + " 987654321" : "+51 987654321"}
             value={formData.phone}
             onChange={handleChange}
             onInput={(e) => {
@@ -101,6 +127,9 @@ const RegisterForm: FC<RegisterFormProps> = ({
             autoComplete="tel"
             required
           />
+          {fieldErrors.phone && (
+            <p className="text-sm text-red-600 mt-1">{fieldErrors.phone}</p>
+          )}
           <FormInput
             label={
               <span>

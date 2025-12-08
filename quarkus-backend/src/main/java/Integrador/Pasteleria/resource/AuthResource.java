@@ -11,6 +11,7 @@ import Integrador.Pasteleria.dto.ResetPasswordRequest;
 import Integrador.Pasteleria.entity.Usuario;
 import Integrador.Pasteleria.service.PasswordResetService;
 import Integrador.Pasteleria.service.UsuarioService;
+import Integrador.Pasteleria.util.PhoneValidator;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -77,6 +78,18 @@ public class AuthResource {
                                         .entity(Map.of("ok", false, "msg", "Las contraseñas no coinciden"))
                                         .build();
                 }
+
+                // Validar teléfono según el país
+                PhoneValidator.ValidationResult phoneValidation = PhoneValidator.validatePhoneNumber(
+                    req.getPhone(), 
+                    req.getCountry()
+                );
+                if (!phoneValidation.valid) {
+                        return Response.status(400)
+                                        .entity(Map.of("ok", false, "msg", phoneValidation.error))
+                                        .build();
+                }
+
                 if (usuarioService.findByUserEmail(req.getEmail()).isPresent()) {
                         return Response.status(409)
                                         .entity(Map.of("ok", false, "msg", "El usuario ya existe"))
